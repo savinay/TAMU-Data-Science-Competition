@@ -3,7 +3,7 @@ from addWeeks import addWeeks
 import pandas as pd
 import os
 import subprocess
-
+import time
 
 import sys
 
@@ -32,17 +32,28 @@ def readAllRows(filename, step, column):
     total = 1000000
     trip_miles = {}
     for rowNum in range(0, total, step):
+        t0 = time.time()
         df = pd.read_csv("../data/Chicago_taxi_trips2017.csv",
-                        skiprows=range(1, rowNum), nrows=step, 
-                        usecols=["Taxi ID", "Trip Miles", "Trip Start Timestamp"],
-                        dtype={
-                            "Taxi ID": object,
-                            "Trip Miles": float,
-                            "Trip Start Timestamp": object
-                        })
+                         skiprows=range(1, rowNum), nrows=step,
+                         usecols=["Taxi ID", "Trip Miles",
+                                  "Trip Start Timestamp"],
+                         dtype={
+                             "Taxi ID": object,
+                             "Trip Miles": float,
+                             "Trip Start Timestamp": object
+                         })
+        t1 = time.time()
+        print(f"Time for read is {t1 - t0}")
+
+        t0 = time.time()
         df = addWeeks(df)
+        t1 = time.time()
+        print(f"Time for add week is {t1 - t0}")
         print(f"Up to {rowNum} read.")
+        t0 = time.time()
         trip_miles = sumsByTaxiID(column, df, trip_miles)
+        t1 = time.time()
+        print(f"Time for sumsByTaxiID is {t1 - t0}")
     headers = ['Taxi ID', *[f'week{i}' for i in range(1, 54)]]
     return pd.DataFrame([[key, *val] for key, val in trip_miles.items()], columns=headers, index=None)
 
