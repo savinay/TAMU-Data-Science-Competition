@@ -1,4 +1,5 @@
-import addWeeks from addWeeks
+from addWeeks import addWeeks
+import pandas as pd
 
 def calculateSums(column, df):
     weeks = range(1,54)
@@ -12,6 +13,6 @@ def calculateSums(column, df):
                 trip_miles[val[0]][week - 1] += val[1]
 
 if __name__ == "__main__":
-    df = pd.read_csv('Chicago_taxi_trips2017.csv', nrows = 1000000)
+    df = pd.read_csv('Chicago_taxi_trips2017.csv', nrows = 10000)
     df = addWeeks(df)
     calculateSums("Trip Miles", df)
