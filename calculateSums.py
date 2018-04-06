@@ -1,5 +1,4 @@
 # pylint: skip-file
-from addWeeks import addWeeks
 import pandas as pd
 import os
 import subprocess
@@ -17,52 +16,55 @@ def getwknum(string):
     return dt.datetime(year, month, day, 0, 0, 0).timetuple().tm_yday // 7
 
 
-def sumsByTaxiID(column, data, trip_miles):
-    for _, row in data.iterrows():
-        taxiID = row["Taxi ID"]
-        if not trip_miles.get(taxiID):
-            trip_miles[taxiID] = [0] * 53
-        wknum = getwknum(row["Trip Start Timestamp"])
-        trip_miles[taxiID][wknum] += float(row[column])
-    # trip_miles # {taxiId1: [sum-week1, ... , sum-week53], ... , taxiIdN: [sum-week1, ... , sum-week53]}
-    return trip_miles
+def addWeeks(df):
+    df['week'] = df['Trip Start Timestamp'].transform(lambda x: getwknum(x))
+    return df
+
+
+def sumsByTaxiID(column, new_df, total_df):
+    # trying to speed this up using pandas vectorization
+    new_df = new_df.groupby(["Taxi ID", "week"])["Trip Miles"].sum().to_frame()
+    k = pd.concat([total_df, new_df]).groupby(
+        ["Taxi ID", "week"])["Trip Miles"].sum()
+    return k
 
 
 def readAllRows(filename, chunksize, column):
     # test = subprocess.Popen(["wc", "-l", filename], stdout=subprocess.PIPE)
     # output = test.communicate()[0]
     # total = int(str(output).split()[1])
-    total = 10000
-    trip_miles = {}
-    # t0 = time.time()
-    # t1 = time.time()
-    # print(f"Time for read is {t1 - t0}")
+    total = 100000
+    total_df = pd.DataFrame()
     print("Start.")
     t0 = time.time()
     start = time.time()
     count = 1
-    for df in pd.read_csv("../data/Chicago_taxi_trips2017.csv",
-                                       usecols=["Taxi ID", "Trip Miles",
-                                                "Trip Start Timestamp"],
-                                       dtype={
-                                           "Taxi ID": object,
-                                           "Trip Miles": float,
-                                           "Trip Start Timestamp": object
-                                       },
-                                       chunksize=chunksize,
-                                       iterator=True):
-        trip_miles = sumsByTaxiID(column, df, trip_miles)
+    for df in pd.read_csv(filename,
+                          usecols=["Taxi ID", "Trip Miles",
+                                   "Trip Start Timestamp"],
+                          dtype={
+                              "Taxi ID": object,
+                              "Trip Miles": float,
+                              "Trip Start Timestamp": object
+                          },
+                          chunksize=chunksize,
+                          iterator=True,
+                          nrows=total):
+        df = addWeeks(df)
+        total_df = sumsByTaxiID(column, df, total_df)
         t1 = time.time()
-        print(f"Time for this loop is {t1 - t0} and average {(t1 - start) / count}")
+        # print(f"Time for this loop is {t1 - t0} and average {(t1 - start) / count}")
         print(f"Rows: {chunksize * count}")
         count += 1
         t0 = t1
     print(f"Done in total time {t1 - start}")
     headers = ['Taxi ID', *[f'week{i}' for i in range(1, 54)]]
-    return pd.DataFrame([[key, *val] for key, val in trip_miles.items()], columns=headers, index=None)
+    # return pd.DataFrame([[key, *val] for key, val in total_df.items()], columns=headers, index=None)
+    return total_df
 
 
 if __name__ == "__main__":
     result = readAllRows(
-        "../data/Chicago_taxi_trips2017.csv", 10000, "Trip Miles")
+        "Chicago_taxi_trips2017.csv", 10000, "Trip Miles")
     result.to_csv("out.csv", index=False)
+    # get num of taxis: cars['Manufacturer'].nunique()
