@@ -29,30 +29,33 @@ def sumsByTaxiID(column, data, trip_miles):
 
 
 def readAllRows(filename, chunksize, column):
-    test = subprocess.Popen(["wc", "-l", filename], stdout=subprocess.PIPE)
-    output = test.communicate()[0]
-    total = int(str(output).split()[1])
-    # total = 1000000
+    # test = subprocess.Popen(["wc", "-l", filename], stdout=subprocess.PIPE)
+    # output = test.communicate()[0]
+    # total = int(str(output).split()[1])
+    total = 1000000
     trip_miles = {}
     # t0 = time.time()
     # t1 = time.time()
     # print(f"Time for read is {t1 - t0}")
     print("Start.")
+    t0 = time.time()
+    start = time.time()
+    count = 1
     for df in pd.read_csv("../data/Chicago_taxi_trips2017.csv",
-                         usecols=["Taxi ID", "Trip Miles",
-                                  "Trip Start Timestamp"],
-                         dtype={
-                             "Taxi ID": object,
-                             "Trip Miles": float,
-                             "Trip Start Timestamp": object
-                         },
-                         chunksize=chunksize,
-                         iterator=True):
-        print(f"read.")
-        t0 = time.time()
+                                       usecols=["Taxi ID", "Trip Miles",
+                                                "Trip Start Timestamp"],
+                                       dtype={
+                                           "Taxi ID": object,
+                                           "Trip Miles": float,
+                                           "Trip Start Timestamp": object
+                                       },
+                                       chunksize=chunksize,
+                                       iterator=True):
         trip_miles = sumsByTaxiID(column, df, trip_miles)
         t1 = time.time()
-        print(f"Time for sumsByTaxiID is {t1 - t0}")
+        print(f"Time for this loop is {t1 - t0} and average {(t1 - start) / count}")
+        count += 1
+        t0 = t1
     headers = ['Taxi ID', *[f'week{i}' for i in range(1, 54)]]
     return pd.DataFrame([[key, *val] for key, val in trip_miles.items()], columns=headers, index=None)
 
