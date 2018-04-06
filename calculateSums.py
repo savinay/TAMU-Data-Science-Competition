@@ -4,7 +4,7 @@ import pandas as pd
 import os
 import subprocess
 import time
-
+import datetime as dt
 import sys
 
 filedir = os.path.dirname(os.path.abspath(__file__))
@@ -12,15 +12,18 @@ sys.path.insert(0, os.path.join(filedir, os.pardir))
 os.chdir(filedir)
 
 
-def sumsByTaxiID(column, df, trip_miles):
-    weeks = range(1, 54)
-    for week in weeks:
-        df_week = df[(df['week'] == week)]
-        for _, val in df_week[['Taxi ID', column]].iterrows():
-            if val[0] not in trip_miles:
-                trip_miles[val[0]] = [0] * 53
-            else:
-                trip_miles[val[0]][week - 1] += val[1]
+def getwknum(string):
+    month, day, year = map(int, string.split()[0].split("/"))
+    return dt.datetime(year, month, day, 0, 0, 0).timetuple().tm_yday // 7
+
+
+def sumsByTaxiID(column, data, trip_miles):
+    for _, row in data.iterrows():
+        taxiID = row["Taxi ID"]
+        if not trip_miles.get(taxiID):
+            trip_miles[taxiID] = [0] * 53
+        wknum = getwknum(row["Trip Start Timestamp"])
+        trip_miles[taxiID][wknum] += float(row[column])
     # trip_miles # {taxiId1: [sum-week1, ... , sum-week53], ... , taxiIdN: [sum-week1, ... , sum-week53]}
     return trip_miles
 
@@ -45,10 +48,10 @@ def readAllRows(filename, step, column):
         t1 = time.time()
         print(f"Time for read is {t1 - t0}")
 
-        t0 = time.time()
-        df = addWeeks(df)
-        t1 = time.time()
-        print(f"Time for add week is {t1 - t0}")
+        # t0 = time.time()
+        # df = addWeeks(df)
+        # t1 = time.time()
+        # print(f"Time for add week is {t1 - t0}")
         print(f"Up to {rowNum} read.")
         t0 = time.time()
         trip_miles = sumsByTaxiID(column, df, trip_miles)
