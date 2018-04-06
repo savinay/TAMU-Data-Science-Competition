@@ -3,7 +3,7 @@ from addWeeks import addWeeks
 import pandas as pd
 
 
-def calculateSums(column, df):
+def sumsByTaxiID(column, df):
     weeks = range(1, 54)
     trip_miles = {}
     for week in weeks:
@@ -17,8 +17,9 @@ def calculateSums(column, df):
     headers = ['Taxi ID', *[f'week{i}' for i in range(1, 54)]]
     return pd.DataFrame([[key, *val] for key, val in trip_miles.items()], columns=headers)
 
+
 if __name__ == "__main__":
-    df = pd.read_csv('../data/Chicago_taxi_trips2017.csv', nrows = 10000)
+    df = pd.read_csv('../data/Chicago_taxi_trips2017.csv', nrows=10000)
     df = addWeeks(df)
-    result = calculateSums("Trip Miles", df)
+    result = sumsByTaxiID("Trip Miles", df)
     result.to_csv("out.csv")
