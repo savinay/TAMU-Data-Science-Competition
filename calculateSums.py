@@ -28,31 +28,27 @@ def sumsByTaxiID(column, data, trip_miles):
     return trip_miles
 
 
-def readAllRows(filename, step, column):
+def readAllRows(filename, chunksize, column):
     test = subprocess.Popen(["wc", "-l", filename], stdout=subprocess.PIPE)
-    # output = test.communicate()[0]
-    # total = int(str(output).split()[1])
-    total = 1000000
+    output = test.communicate()[0]
+    total = int(str(output).split()[1])
+    # total = 1000000
     trip_miles = {}
-    for rowNum in range(0, total, step):
-        t0 = time.time()
-        df = pd.read_csv("../data/Chicago_taxi_trips2017.csv",
-                         skiprows=range(1, rowNum), nrows=step,
+    # t0 = time.time()
+    # t1 = time.time()
+    # print(f"Time for read is {t1 - t0}")
+    print("Start.")
+    for df in pd.read_csv("../data/Chicago_taxi_trips2017.csv",
                          usecols=["Taxi ID", "Trip Miles",
                                   "Trip Start Timestamp"],
                          dtype={
                              "Taxi ID": object,
                              "Trip Miles": float,
                              "Trip Start Timestamp": object
-                         })
-        t1 = time.time()
-        print(f"Time for read is {t1 - t0}")
-
-        # t0 = time.time()
-        # df = addWeeks(df)
-        # t1 = time.time()
-        # print(f"Time for add week is {t1 - t0}")
-        print(f"Up to {rowNum} read.")
+                         },
+                         chunksize=chunksize,
+                         iterator=True):
+        print(f"read.")
         t0 = time.time()
         trip_miles = sumsByTaxiID(column, df, trip_miles)
         t1 = time.time()

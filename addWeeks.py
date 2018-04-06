@@ -3,7 +3,8 @@ import pandas as pd
 
 
 def addWeeks(df):
-	df['datetime_values'] = df['Trip Start Timestamp'].apply(pd.to_datetime)
+	df['datetime_values'] = df['Trip Start Timestamp'].map(
+		lambda x: pd.to_datetime(x))
 	df['week'] = df['datetime_values'].dt.week
 	return df
 
