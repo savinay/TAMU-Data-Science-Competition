@@ -29,7 +29,7 @@ def readAllRows(filename, step, column):
     test = subprocess.Popen(["wc", "-l", filename], stdout=subprocess.PIPE)
     # output = test.communicate()[0]
     # total = int(str(output).split()[1])
-    total = 100000
+    total = 1000000
     trip_miles = {}
     for rowNum in range(0, total, step):
         df = pd.read_csv("../data/Chicago_taxi_trips2017.csv",
@@ -41,6 +41,7 @@ def readAllRows(filename, step, column):
                             "Trip Start Timestamp": object
                         })
         df = addWeeks(df)
+        print(f"Up to {rowNum} read.")
         trip_miles = sumsByTaxiID(column, df, trip_miles)
     headers = ['Taxi ID', *[f'week{i}' for i in range(1, 54)]]
     return pd.DataFrame([[key, *val] for key, val in trip_miles.items()], columns=headers, index=None)
@@ -49,4 +50,4 @@ def readAllRows(filename, step, column):
 if __name__ == "__main__":
     result = readAllRows(
         "../data/Chicago_taxi_trips2017.csv", 10000, "Trip Miles")
-    result.to_csv("out2.csv", index=False)
+    result.to_csv("out.csv", index=False)
