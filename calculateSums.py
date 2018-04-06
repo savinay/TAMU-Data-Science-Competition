@@ -32,7 +32,7 @@ def readAllRows(filename, chunksize, column):
     # test = subprocess.Popen(["wc", "-l", filename], stdout=subprocess.PIPE)
     # output = test.communicate()[0]
     # total = int(str(output).split()[1])
-    total = 1000000
+    total = 10000
     trip_miles = {}
     # t0 = time.time()
     # t1 = time.time()
@@ -54,8 +54,10 @@ def readAllRows(filename, chunksize, column):
         trip_miles = sumsByTaxiID(column, df, trip_miles)
         t1 = time.time()
         print(f"Time for this loop is {t1 - t0} and average {(t1 - start) / count}")
+        print(f"Rows: {chunksize * count}")
         count += 1
         t0 = t1
+    print(f"Done in total time {t1 - start}")
     headers = ['Taxi ID', *[f'week{i}' for i in range(1, 54)]]
     return pd.DataFrame([[key, *val] for key, val in trip_miles.items()], columns=headers, index=None)
 
