@@ -6,7 +6,7 @@ import subprocess
 import os
 
 
-def strip_package_version_number():
+def strip_gitcommit():
     """Generate the version info from git tags and commits."""
     try:
         repo_dir = os.path.abspath(os.path.join(os.path.dirname(__file__)))
@@ -35,5 +35,6 @@ def strip_package_version_number():
         version = "unknown"
     return version
 
+
 if __name__ == "__main__":
-    print (strip_package_version_number())
+    print(strip_gitcommit())

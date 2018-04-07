@@ -6,10 +6,7 @@ import subprocess
 import time
 import datetime as dt
 import sys
-
-filedir = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(filedir, os.pardir))
-os.chdir(filedir)
+from gitversion import strip_gitcommit
 
 
 def getwknum(string):
@@ -41,7 +38,7 @@ def readAllRows(filename, chunksize, column):
     t0 = time.time()
     start = time.time()
     count = 1
-    for df in pd.read_csv("../data/Chicago_taxi_trips2017.csv",
+    for df in pd.read_csv(filename,
                                        usecols=["Taxi ID", "Trip Miles",
                                                 "Trip Start Timestamp"],
                                        dtype={
@@ -63,6 +60,11 @@ def readAllRows(filename, chunksize, column):
 
 
 if __name__ == "__main__":
+    # all this does is sets the cwd to where this file is.
+    filedir = os.path.dirname(os.path.abspath(__file__))
+    sys.path.insert(0, os.path.join(filedir, os.pardir))
+    os.chdir(filedir)
+    
     result = readAllRows(
-        "../data/Chicago_taxi_trips2017.csv", 10000, "Trip Miles")
-    result.to_csv("out.csv", index=False)
+        "testdata.csv", 10000, "Trip Miles")
+    result.to_csv(f"testout{strip_gitcommit()}.csv", index=False)
