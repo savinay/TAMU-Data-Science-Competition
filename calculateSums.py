@@ -5,6 +5,7 @@ import subprocess
 import time
 import datetime as dt
 import sys
+from collections import Counter
 
 filedir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(filedir, os.pardir))
@@ -21,11 +22,10 @@ def addWeeks(df):
     return df
 
 
-def sumsByTaxiID(column, new_df, total_df):
+def sumsByTaxiID(column, new_df):
     # trying to speed this up using pandas vectorization
-    new_df = new_df.groupby(["Taxi ID", "week"])["Trip Miles"].sum().to_frame()
-    k = pd.concat([total_df, new_df]).groupby(
-        ["Taxi ID", "week"])["Trip Miles"].sum()
+    k = new_df.groupby(["Taxi ID", "week"])["Trip Miles"].sum().to_dict()
+    k = Counter(k)
     return k
 
 
@@ -34,7 +34,7 @@ def readAllRows(filename, chunksize, column):
     # output = test.communicate()[0]
     # total = int(str(output).split()[1])
     total = 100000
-    total_df = pd.DataFrame()
+    total_count = Counter()
     print("Start.")
     t0 = time.time()
     start = time.time()
@@ -50,8 +50,7 @@ def readAllRows(filename, chunksize, column):
                           chunksize=chunksize,
                           iterator=True,
                           nrows=total):
-        df = addWeeks(df)
-        total_df = sumsByTaxiID(column, df, total_df)
+        total_count += sumsByTaxiID(column, addWeeks(df))
         t1 = time.time()
         # print(f"Time for this loop is {t1 - t0} and average {(t1 - start) / count}")
         print(f"Rows: {chunksize * count}")
@@ -60,11 +59,12 @@ def readAllRows(filename, chunksize, column):
     print(f"Done in total time {t1 - start}")
     headers = ['Taxi ID', *[f'week{i}' for i in range(1, 54)]]
     # return pd.DataFrame([[key, *val] for key, val in total_df.items()], columns=headers, index=None)
-    return total_df
+    return total_count
 
 
 if __name__ == "__main__":
     result = readAllRows(
         "Chicago_taxi_trips2017.csv", 10000, "Trip Miles")
-    result.to_csv("out.csv", index=False)
+    # print(result)
+    # result.to_csv("out.csv", index=False)
     # get num of taxis: cars['Manufacturer'].nunique()
