@@ -58,8 +58,8 @@ def readAllRows(filename, column, chunksize, nrows=None):
         nrows = int(str(output).split()[1])
         print(f"{nrows} rows in file.")
 
-    # total_count = Counter()
-    trip_miles = {}
+    total_count = Counter() # new method
+    # trip_miles = {} # old method
     count = 1
     print("Start reading.")
     t0 = time.time()
@@ -76,17 +76,17 @@ def readAllRows(filename, column, chunksize, nrows=None):
                           chunksize=chunksize,
                           iterator=True,
                           nrows=nrows):
-        # total_count += sumsByTaxiID(column, addWeeks(df))
-        trip_miles = sumsByTaxiID_old(column, df, trip_miles)
+        total_count += sumsByTaxiID(column, addWeeks(df)) # new method
+        # trip_miles = sumsByTaxiID_old(column, df, trip_miles) # old method
         t1 = time.time()
-        # print(f"Time for this loop is {t1 - t0} and average {(t1 - start) / count}")
+        print(f"Time for this loop is {t1 - t0} and average {(t1 - starttime) / count}")
         print(f"Rows processed: {chunksize * count}")
         count += 1
         t0 = t1
     print(f"Done in total time {(t1 - starttime) / 60} min.")
     headers = ['Taxi ID', *[f'week{i}' for i in range(1, 54)]]
-    # return pd.DataFrame([[key, *val] for key, val in convert(total_count).items()], columns=headers, index=None)
-    return pd.DataFrame([[key, *val] for key, val in trip_miles.items()], columns=headers, index=None)
+    return pd.DataFrame([[key, *val] for key, val in convert(total_count).items()], columns=headers, index=None) # new method
+    # return pd.DataFrame([[key, *val] for key, val in trip_miles.items()], columns=headers, index=None) # old method
 
 
 if __name__ == "__main__":
@@ -96,6 +96,6 @@ if __name__ == "__main__":
     os.chdir(filedir)
     
     result = readAllRows(
-        "testdata.csv", "Trip Miles", chunksize=1)
-    result.to_csv(f"testout{strip_gitcommit()}.csv", index=False)
+        "Chicago_taxi_trips2017.csv", "Trip Miles", chunksize=100000)
+    result.to_csv(f"out{strip_gitcommit()}.csv", index=False)
     # get num of taxis: df['Taxi ID'].nunique()
