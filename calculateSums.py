@@ -22,10 +22,7 @@ def addWeeks(df):
 
 
 def sumsByTaxiID(column, new_df):
-    # trying to speed this up using pandas vectorization
-    k = new_df.groupby(["Taxi ID", "week"])["Trip Miles"].sum().to_dict()
-    k = Counter(k)
-    return k
+    return Counter(new_df.groupby(["Taxi ID", "week"])["Trip Miles"].sum().to_dict())
 
 def sumsByTaxiID_old(column, data, trip_miles):
     for _, row in data.iterrows():
@@ -34,7 +31,6 @@ def sumsByTaxiID_old(column, data, trip_miles):
             trip_miles[taxiID] = [0] * 53
         wknum = getwknum(row["Trip Start Timestamp"])
         trip_miles[taxiID][wknum] += float(row[column])
-    # trip_miles # {taxiId1: [sum-week1, ... , sum-week53], ... , taxiIdN: [sum-week1, ... , sum-week53]}
     return trip_miles
 
 def convert(data):
