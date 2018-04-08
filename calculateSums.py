@@ -97,5 +97,5 @@ if __name__ == "__main__":
 
     # Chicago_taxi_trips2017.csv: 7688951
     result = readAllRows(
-        "Chicago_taxi_trips2017.csv", "Trip Miles", chunksize=10000, nrows=100000)
-    result.to_csv(f"out{strip_gitcommit()}.csv", index=False)
+        "Chicago_taxi_trips2017.csv", column="Trip Miles", chunksize=10000, nrows=100000)
+    result.to_csv(f"out.csv", index=False)
