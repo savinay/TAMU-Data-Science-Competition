@@ -23,7 +23,7 @@ def addWeeks(df):
 
 
 def sumsByTaxiID(column, new_df):
-    return Counter(new_df.groupby(["Taxi ID", "week"])["Trip Miles"].sum().to_dict())
+    return new_df.groupby(["Taxi ID", "week"])["Trip Miles"].sum()
 
 
 def sumsByTaxiID_old(column, data, trip_miles):
@@ -47,17 +47,8 @@ def convert(data):
     return trip_miles
 
 
-def readAllRows(filename, column, chunksize, nrows=None):
-    if not nrows:
-        if sys.platform == "win32":
-            raise Exception("Must pass nrows if on windows.")
-        print(f"Reading total number of lines in {filename}.")
-        test = subprocess.Popen(["wc", "-l", filename], stdout=subprocess.PIPE)
-        output = test.communicate()[0]
-        nrows = int(str(output).split()[1])
-        print(f"{nrows} rows in file.")
-
-    total_count = Counter()  # new method
+def readAllRows(filename, column, chunksize, nrows):
+    total_count = pd.Series()  # new method
     # trip_miles = {} # old method
     count = 1
     print("Start reading.")
@@ -75,7 +66,7 @@ def readAllRows(filename, column, chunksize, nrows=None):
                           chunksize=chunksize,
                           iterator=True,
                           nrows=nrows):
-        total_count += sumsByTaxiID(column, addWeeks(df))  # new method
+        total_count.add(sumsByTaxiID(column, addWeeks(df)), fill_value=0, level=1)  # new method
         # trip_miles = sumsByTaxiID_old(column, df, trip_miles) # old method
         t1 = time.time()
         print(
@@ -89,6 +80,14 @@ def readAllRows(filename, column, chunksize, nrows=None):
     return pd.DataFrame([[key, *val] for key, val in convert(total_count).items()], columns=headers, index=None)
     # return pd.DataFrame([[key, *val] for key, val in trip_miles.items()], columns=headers, index=None) # old method
 
+def readnumrows(filename):
+    if sys.platform == "win32":
+        raise Exception("Must pass nrows if on windows.")
+    print(f"Reading total number of lines in {filename}.")
+    test = subprocess.Popen(["wc", "-l", filename], stdout=subprocess.PIPE)
+    output = test.communicate()[0]
+    nrows = int(str(output).split()[1])
+    print(f"{nrows} rows in {filename}.")
 
 if __name__ == "__main__":
     # set the cwd to where this file is.
@@ -96,7 +95,7 @@ if __name__ == "__main__":
     sys.path.insert(0, os.path.join(filedir, os.pardir))
     os.chdir(filedir)
 
+    # Chicago_taxi_trips2017.csv: 7688951
     result = readAllRows(
-        "Chicago_taxi_trips2017.csv", "Trip Miles", chunksize=100000)
+        "Chicago_taxi_trips2017.csv", "Trip Miles", chunksize=10000, nrows=100000)
     result.to_csv(f"out{strip_gitcommit()}.csv", index=False)
-    # get num of taxis: df['Taxi ID'].nunique()
