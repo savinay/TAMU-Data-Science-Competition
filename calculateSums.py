@@ -23,7 +23,7 @@ def addWeeks(df):
 
 
 def sumsByTaxiID(column, new_df):
-    return new_df.groupby(["Taxi ID", "week"])["Trip Miles"].sum()
+    return new_df.groupby(["Taxi ID", "week"])[column].sum()
 
 
 def sumsByTaxiID_old(column, data, trip_miles):
@@ -48,26 +48,26 @@ def convert(data):
 
 
 def readAllRows(filename, column, chunksize, nrows):
-    total_count = pd.Series()  # new method
-    # trip_miles = {} # old method
+    # total_count = pd.Series()  # new method
+    trip_miles = {} # old method
     count = 1
     print("Start reading.")
     t0 = time.time()
     starttime = time.time()
 
     for df in pd.read_csv(filename,
-                          usecols=["Taxi ID", "Trip Miles",
+                          usecols=["Taxi ID", column,
                                    "Trip Start Timestamp"],
                           dtype={
                               "Taxi ID": object,
-                              "Trip Miles": float,
+                              column: float,
                               "Trip Start Timestamp": object
                           },
                           chunksize=chunksize,
                           iterator=True,
                           nrows=nrows):
-        total_count.add(sumsByTaxiID(column, addWeeks(df)), fill_value=0, level=1)  # new method
-        # trip_miles = sumsByTaxiID_old(column, df, trip_miles) # old method
+        # total_count.add(sumsByTaxiID(column, addWeeks(df)), fill_value=0, level=1)  # new method
+        trip_miles = sumsByTaxiID_old(column, df, trip_miles) # old method
         t1 = time.time()
         print(
             f"Time for this loop is {t1 - t0} and average {(t1 - starttime) / count}")
@@ -77,8 +77,8 @@ def readAllRows(filename, column, chunksize, nrows):
     print(f"Done in total time {(t1 - starttime) / 60} min.")
     headers = ['Taxi ID', *[f'week{i}' for i in range(1, 54)]]
     # new method
-    return pd.DataFrame([[key, *val] for key, val in convert(total_count).items()], columns=headers, index=None)
-    # return pd.DataFrame([[key, *val] for key, val in trip_miles.items()], columns=headers, index=None) # old method
+    # return pd.DataFrame([[key, *val] for key, val in convert(total_count).items()], columns=headers, index=None)
+    return pd.DataFrame([[key, *val] for key, val in trip_miles.items()], columns=headers, index=None) # old method
 
 def readnumrows(filename):
     if sys.platform == "win32":
