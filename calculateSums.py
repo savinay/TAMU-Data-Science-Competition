@@ -82,7 +82,7 @@ def readAllRows(filename, column, chunksize, nrows):
 
 def readnumrows(filename):
     if sys.platform == "win32":
-        raise Exception("Must pass nrows if on windows.")
+        raise Exception("Can only read file row count on mac.")
     print(f"Reading total number of lines in {filename}.")
     test = subprocess.Popen(["wc", "-l", filename], stdout=subprocess.PIPE)
     output = test.communicate()[0]
