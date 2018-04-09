@@ -16,7 +16,7 @@ DATATYPES = {
 
 
 def getwknum(string):
-    month, day, year = map(int, [string[:2], string[2:4], string[6:]])
+    month, day, year = map(int, string.split()[0].split("/"))
     return dt.datetime(year, month, day, 0, 0, 0).timetuple().tm_yday // 7
 
 
@@ -25,9 +25,11 @@ def addWeeks(df):
     return df
 
 
-filename = "original/Chicago_taxi_trips2014.csv"
+filename = "original/Chicago_taxi_trips2013.csv"
 df = pd.read_csv(filename,
                  usecols=DATATYPES.keys(),
                  dtype=DATATYPES)
+print("Read.")
 df = addWeeks(df)
-df.to_csv(filename, index=False)
+df.to_csv(filename.split(".")[0] + "_weeks.csv", index=False)
+print("Done.")

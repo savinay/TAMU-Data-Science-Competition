@@ -69,5 +69,5 @@ if __name__ == "__main__":
 
     for column in readcols:
         result = getSums(filename, column, df, year)
-        result.to_csv(f"sums/{year}_{column}_sums.csv", index=False)
+        result.to_csv(f"{year}_{column}_sums.csv", index=False)
         print(f"{year}_{column}_sums.csv written.")
