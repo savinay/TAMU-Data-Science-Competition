@@ -28,7 +28,7 @@ def convert(data):
     return trip_miles
 
 
-def getSums(filename, column):
+def getSums(filename, column, dictionary):
     t0 = time.time()
     print("Start.")
     df = pd.read_csv("Chicago_taxi_trips2015.csv",
