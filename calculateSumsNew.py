@@ -23,12 +23,12 @@ def getSums(filename, column):
                      usecols=["Taxi ID", column, "Trip Start Timestamp"],
                      dtype={
                          "Taxi ID": object,
-                         "Trip Miles": float,
+                         column: float,
                          "Trip Start Timestamp": object
                      })
     t1 = time.time()
     print(f"{filename} done in {t1-t0} sec.")
-    total_count = df.groupby(["Taxi ID", "week"])["Trip Miles"].sum().to_dict()
+    total_count = df.groupby(["Taxi ID", "week"])[column].sum().to_dict()
     headers = ['Taxi ID', *[f'week{i}' for i in range(1, 54)]]
     result = pd.DataFrame(
         [[key, *val] for key, val in convert(total_count).items()], columns=headers, index=None)
