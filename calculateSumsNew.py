@@ -47,7 +47,6 @@ def getSums(filename, column, dictionary, df, year):
     result = pd.DataFrame(
         [[key, *val] for key, val in convert(total_count).items()], columns=headers, index=None)
     result.to_csv(f"{filename}_{column}_sums.csv", index=False)
-    filename = filename.split("")
     print(f"{year}_{column}_sums.csv written.")
 
 if __name__ == "__main__":
@@ -68,5 +67,6 @@ if __name__ == "__main__":
                         "Trip Start Timestamp": object
                     })
     dictionary = {"Trip Miles": float, "Trip Total": object, "Trip Seconds": float, "Tolls": object, "Fare": object, "Tips": object, "Tolls": object, "Extras": object}
+    print("Dataframe read.")
     for column in ["Trip Total", "Trip Seconds", "Tolls", "Fare", "Tips", "Tolls", "Extras"]:
         getSums(filename, column, dictionary, addWeeks(df), year)
