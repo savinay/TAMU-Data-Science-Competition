@@ -1,19 +1,22 @@
 # pylint: skip-file
 import pandas as pd
-import os
-import subprocess
-import time
-import datetime as dt
-import sys
-from gitversion import strip_gitcommit
 from collections import Counter
+import numpy as np
+import datetime as dt
+import time
+
+HEADERS = ['Taxi ID', *[f'week{i}' for i in range(1, 54)]]
+DATATYPES = {
+    "Taxi ID": object, "Trip Start Timestamp": object,
+    "Trip Miles": float, "Trip Total": object, "Trip Seconds": float,
+    "Tolls": object, "Fare": object, "Tips": object, "Tolls": object, "Extras": object,
+    "Pickup Centroid Latitude": float, "Pickup Centroid Longitude": float,
+    "Dropoff Centroid Latitude": float, "Dropoff Centroid Longitude": float
+}
 
 
 def getwknum(string):
-    # this could be sped up since split is O(n)
-    # if we could work under assumption timestamps are all exact same,
-    # then we can split on index
-    month, day, year = map(int, string.split()[0].split("/"))
+    month, day, year = map(int, [string[:2], string[2:4], string[6:]])
     return dt.datetime(year, month, day, 0, 0, 0).timetuple().tm_yday // 7
 
 
@@ -22,21 +25,7 @@ def addWeeks(df):
     return df
 
 
-def sumsByTaxiID(column, new_df):
-    return new_df.groupby(["Taxi ID", "week"])[column].sum()
-
-
-def sumsByTaxiID_old(column, data, trip_miles):
-    for _, row in data.iterrows():
-        taxiID = row["Taxi ID"]
-        if not trip_miles.get(taxiID):
-            trip_miles[taxiID] = [0] * 53
-        wknum = getwknum(row["Trip Start Timestamp"])
-        trip_miles[taxiID][wknum] += float(row[column])
-    return trip_miles
-
-
-def convert(data):
+def prepareForCSV(data):
     trip_miles = {}
     for k, v in data.items():
         taxiID = k[0]
@@ -44,62 +33,41 @@ def convert(data):
             trip_miles[taxiID] = [0] * 53
         wknum = k[1]
         trip_miles[taxiID][wknum] += float(v)
-    return trip_miles
+    return pd.DataFrame(
+        [[key, *val] for key, val in trip_miles.items()], columns=HEADERS, index=None)
 
 
-def readAllRows(filename, column, chunksize, nrows):
-    # total_count = pd.Series()  # new method
-    trip_miles = {} # old method
-    count = 1
-    print("Start reading.")
-    t0 = time.time()
-    starttime = time.time()
-
-    for df in pd.read_csv(filename,
-                          usecols=["Taxi ID", column,
-                                   "Trip Start Timestamp"],
-                          dtype={
-                              "Taxi ID": object,
-                              column: float,
-                              "Trip Start Timestamp": object
-                          },
-                          chunksize=chunksize,
-                          iterator=True,
-                          nrows=nrows):
-        # total_count.add(sumsByTaxiID(column, addWeeks(df)), fill_value=0, level=1)  # new method
-        trip_miles = sumsByTaxiID_old(column, df, trip_miles) # old method
+def getSums(filename, column, df, year):
+    if DATATYPES[column] == object:
+        t0 = time.time()
+        df[column] = df[column].map(
+            lambda x: x if type(x) == float else float(x[1:]))
         t1 = time.time()
-        print(
-            f"Time for this loop is {t1 - t0} and average {(t1 - starttime) / count}")
-        print(f"Rows processed: {chunksize * count}")
-        count += 1
-        t0 = t1
-    print(f"Done in total time {(t1 - starttime) / 60} min.")
-    headers = ['Taxi ID', *[f'week{i}' for i in range(1, 54)]]
-    # new method
-    # return pd.DataFrame([[key, *val] for key, val in convert(total_count).items()], columns=headers, index=None)
-    return pd.DataFrame([[key, *val] for key, val in trip_miles.items()], columns=headers, index=None) # old method
+        print(f"map in {t1-t0} sec.")
+    t0 = time.time()
+    total_count = df.groupby(["Taxi ID", "week"])[column].sum().to_dict()
+    t1 = time.time()
+    print(f"groupby in {t1-t0} sec.")
+    t0 = time.time()
+    k = prepareForCSV(total_count)
+    t1 = time.time()
+    print(f"prep in {t1-t0} sec.")
+    return k
 
-def readnumrows(filename):
-    if sys.platform == "win32":
-        raise Exception("Can only read file row count on mac.")
-    print(f"Reading total number of lines in {filename}.")
-    test = subprocess.Popen(["wc", "-l", filename], stdout=subprocess.PIPE)
-    output = test.communicate()[0]
-    nrows = int(str(output).split()[1])
-    print(f"{nrows} rows in {filename}.")
 
 if __name__ == "__main__":
-    # set the cwd to where this file is.
-    filedir = os.path.dirname(os.path.abspath(__file__))
-    sys.path.insert(0, os.path.join(filedir, os.pardir))
-    os.chdir(filedir)
+    year = 2016
+    filename = f"original/Chicago_taxi_trips{year}.csv"
+    t0 = time.time()
+    readcols = ["Trip Total"]
+    # reading csv takes about 2 minutes
+    df = addWeeks(pd.read_csv(filename,
+                              usecols=readcols + ["Taxi ID", "Trip Start Timestamp"],
+                              dtype=DATATYPES))
+    t1 = time.time()
+    print(f"{filename} read (and weeks added) in {t1-t0} sec.")
 
-    # Chicago_taxi_trips2017.csv: 7688951
-    # Chicago_taxi_trips2016.csv: 19878277
-    # Chicago_taxi_trips2015.csv: 27400745
-    # Chicago_taxi_trips2014.csv: 31021727
-    # Chicago_taxi_trips2013.csv: 26870288
-    result = readAllRows(
-        "Chicago_taxi_trips2017.csv", column="Trip Miles", chunksize=10000, nrows=100000)
-    result.to_csv(f"out.csv", index=False)
+    for column in readcols:
+        result = getSums(filename, column, df, year)
+        result.to_csv(f"sums/{year}_{column}_sums.csv", index=False)
+        print(f"{year}_{column}_sums.csv written.")

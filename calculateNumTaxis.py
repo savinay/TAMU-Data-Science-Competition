@@ -4,7 +4,7 @@ import datetime as dt
 
 
 def getwknum(string):
-    month, day, year = map(int, string.split()[0].split("/"))
+    month, day, year = map(int, [string[:2], string[2:4], string[6:]])
     return dt.datetime(year, month, day, 0, 0, 0).timetuple().tm_yday // 7
 
 
