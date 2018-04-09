@@ -6,6 +6,16 @@ import datetime as dt
 import time
 
 
+def getwknum(string):
+    month, day, year = map(int, string.split()[0].split("/"))
+    return dt.datetime(year, month, day, 0, 0, 0).timetuple().tm_yday // 7
+
+
+def addWeeks(df):
+    df['week'] = df['Trip Start Timestamp'].transform(lambda x: getwknum(x))
+    return df
+
+
 def convert(data):
     trip_miles = {}
     for k, v in data.items():
@@ -20,17 +30,17 @@ def convert(data):
 def getSums(filename, column, dictionary):
     t0 = time.time()
     df = pd.read_csv(filename,
-                     usecols=["Taxi ID", column, "week"],
+                     usecols=["Taxi ID", column, "Trip Start Timestamp"],
                      dtype={
                          "Taxi ID": object,
                          column: dictionary[column],
-                         "week": int
+                         "Trip Start Timestamp": object
                      })
     t1 = time.time()
-    print(f"{filename} done in {t1-t0} sec.")
+    print(f"{filename} read in {t1-t0} sec.")
     if dictionary[column] == object:
         df[column] = df[column].map(lambda x: x if type(x) == float else float(x[1:]))
-    total_count = df.groupby(["Taxi ID", "week"])[column].sum().to_dict()
+    total_count = addWeeks(df).groupby(["Taxi ID", "week"])[column].sum().to_dict()
     headers = ['Taxi ID', *[f'week{i}' for i in range(1, 54)]]
     result = pd.DataFrame(
         [[key, *val] for key, val in convert(total_count).items()], columns=headers, index=None)
@@ -38,8 +48,8 @@ def getSums(filename, column, dictionary):
     print(f"{filename}_{column}_sums.csv written.")
 
 if __name__ == "__main__":
-    for i in range(4, 5):
+    for i in range(3, 4):
         filename = f"Chicago_taxi_trips201{i}.csv"
-        dictionary = {"Trip Total": object, "Trip Seconds": float, "Tolls": object, "Fare": object, "Tips": object, "Tolls": object, "Extras": object}
-        for column in ["Trip Total", "Trip Seconds", "Tolls", "Fare", "Tips", "Tolls", "Extras"]:
+        dictionary = {"Trip Seconds": float, "Tolls": object, "Fare": object, "Tips": object, "Extras": object}
+        for column in ["Trip Seconds", "Tolls", "Fare", "Tips", "Extras"]:
             getSums(filename, column, dictionary)
