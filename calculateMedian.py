@@ -9,7 +9,6 @@ def calculateMedian(filename):
     for week in weeks:
         data = df['week'+str(week)]
         values = [x for x in data.values if x != 0]
-        print(values)
         if len(values) > 0:
             median.append(statistics.median(values))
 
@@ -17,7 +16,8 @@ def calculateMedian(filename):
     return pd.DataFrame(np.array(median).reshape(-1, len(median)), columns=headers, index=None)
 
 if __name__ == "__main__":
-    res = calculateMedian("trip_miles_2015.csv")
-    res.to_csv("trip_miles_median_2015.csv", index=False)
+    for i in range(3, 8):
+        res = calculateMedian("out.csv")
+        res.to_csv(f"out_median_201{i}.csv", index=False)
         
 

@@ -96,6 +96,10 @@ if __name__ == "__main__":
     os.chdir(filedir)
 
     # Chicago_taxi_trips2017.csv: 7688951
+    # Chicago_taxi_trips2016.csv: 19878277
+    # Chicago_taxi_trips2015.csv: 27400745
+    # Chicago_taxi_trips2014.csv: 31021727
+    # Chicago_taxi_trips2013.csv: 26870288
     result = readAllRows(
         "Chicago_taxi_trips2017.csv", column="Trip Miles", chunksize=10000, nrows=100000)
     result.to_csv(f"out.csv", index=False)
