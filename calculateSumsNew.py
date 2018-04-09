@@ -29,9 +29,8 @@ def getSums(filename, column, dictionary):
     t1 = time.time()
     print(f"{filename} done in {t1-t0} sec.")
     if dictionary[column] == object:
-        total_count = df.groupby(["Taxi ID", "week"])[column].transform(lambda x: float(x[1:])).sum().to_dict()
-    else:
-        total_count = df.groupby(["Taxi ID", "week"])[column].sum().to_dict()
+        df[column] = df[column].map(lambda x: x if type(x) == float else float(x[1:]))
+    total_count = df.groupby(["Taxi ID", "week"])[column].sum().to_dict()
     headers = ['Taxi ID', *[f'week{i}' for i in range(1, 54)]]
     result = pd.DataFrame(
         [[key, *val] for key, val in convert(total_count).items()], columns=headers, index=None)
