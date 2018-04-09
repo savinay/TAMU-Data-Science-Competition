@@ -16,8 +16,25 @@ def addWeeks(df):
     df['week'] = df['Trip Start Timestamp'].transform(lambda x: getwknum(x))
     return df
 
-for i in range(3, 8):
+for i in range(5, 6):
     filename = f"Chicago_taxi_trips201{i}.csv"
-    df = pd.read_csv(filename)
+    # for column in ["Trip Total", "Trip Seconds", "Tolls", "Fare", "Tips", "Tolls", "Extras"]:
+    df = pd.read_csv(filename,
+                    usecols=[ "Taxi ID", "Trip Start Timestamp", "Trip Total", "Trip Seconds", "Tolls", "Fare",              "Tips", "Tolls", "Extras", "Pickup Centroid Latitude", "Pickup Centroid Longitude",            "Dropoff Centroid Latitude", "Dropoff Centroid Longitude"],
+                    dtype={
+                        "Taxi ID": object,
+                        "Trip Start Timestamp": object,
+                        "Trip Total": object, 
+                        "Trip Seconds": float,
+                        "Tolls": object,
+                        "Fare": object,
+                        "Tips": object,
+                        "Tolls": object,
+                        "Extras": object,
+                        "Pickup Centroid Latitude": float,
+                        "Pickup Centroid Longitude": float,
+                        "Dropoff Centroid Latitude": float,
+                        "Dropoff Centroid Longitude": float
+                    })
     df = addWeeks(df)
     df.to_csv(filename, index=False)

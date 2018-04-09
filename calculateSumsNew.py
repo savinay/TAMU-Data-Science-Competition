@@ -19,7 +19,7 @@ def convert(data):
 
 def getSums(filename, column):
     t0 = time.time()
-    df = pd.read_csv("Chicago_taxi_trips2013.csv",
+    df = pd.read_csv("Chicago_taxi_trips2015.csv",
                      usecols=["Taxi ID", column, "Trip Start Timestamp"],
                      dtype={
                          "Taxi ID": object,
