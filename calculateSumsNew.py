@@ -39,7 +39,6 @@ def getSums(filename, column, dictionary):
                          "Trip Start Timestamp": object
                      })
     t1 = time.time()
-    # print(type(df[column]))
     df[column] = df[column].map(lambda x: x if type(x) == float else float(x[1:]))
     print(f"{filename} done in {t1-t0} sec.")
     if dictionary[column] == object:
