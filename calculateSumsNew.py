@@ -54,10 +54,11 @@ if __name__ == "__main__":
     year = 2017
     filename = f"Chicago_taxi_trips{i}.csv"
     df = pd.read_csv(filename,
-                    usecols=["Taxi ID", "Trip Total", "Trip Seconds", "Tolls", "Fare", "Tips", "Tolls", "Extras", "Trip Start Timestamp"],
+                    usecols=["Taxi ID", "Trip Miles", "Trip Total", "Trip Seconds", "Tolls", "Fare", "Tips", "Tolls", "Extras", "Trip Start Timestamp"],
                     dtype={
                         "Taxi ID": object,
-                        "Trip Total": object, 
+                        "Trip Total": object,
+                        "Trip Miles": float,
                         "Trip Seconds": float, 
                         "Tolls": object, 
                         "Fare": object, 
@@ -66,6 +67,6 @@ if __name__ == "__main__":
                         "Extras": object,
                         "Trip Start Timestamp": object
                     })
-    dictionary = {"Trip Total": object, "Trip Seconds": float, "Tolls": object, "Fare": object, "Tips": object, "Tolls": object, "Extras": object}
+    dictionary = {"Trip Miles": float, "Trip Total": object, "Trip Seconds": float, "Tolls": object, "Fare": object, "Tips": object, "Tolls": object, "Extras": object}
     for column in ["Trip Total", "Trip Seconds", "Tolls", "Fare", "Tips", "Tolls", "Extras"]:
         getSums(filename, column, dictionary, addWeeks(df), year)
