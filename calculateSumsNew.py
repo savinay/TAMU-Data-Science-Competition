@@ -15,6 +15,16 @@ def addWeeks(df):
     return df
 
 
+def getwknum(string):
+    month, day, year = map(int, string.split()[0].split("/"))
+    return dt.datetime(year, month, day, 0, 0, 0).timetuple().tm_yday // 7
+
+
+def addWeeks(df):
+    df['week'] = df['Trip Start Timestamp'].transform(lambda x: getwknum(x))
+    return df
+
+
 def convert(data):
     trip_miles = {}
     for k, v in data.items():
@@ -29,7 +39,7 @@ def convert(data):
 def getSums(filename, column, dictionary, df, year):
     t0 = time.time()
     t1 = time.time()
-    print(f"{filename} done in {t1-t0} sec.")
+    print(f"{filename} read in {t1-t0} sec.")
     if dictionary[column] == object:
         df[column] = df[column].map(lambda x: x if type(x) == float else float(x[1:]))
     total_count = addWeeks(df).groupby(["Taxi ID", "week"])[column].sum().to_dict()
