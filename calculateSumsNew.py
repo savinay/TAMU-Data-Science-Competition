@@ -20,14 +20,16 @@ def convert(data):
 def getSums(filename, column, dictionary):
     t0 = time.time()
     df = pd.read_csv(filename,
-                     usecols=["Taxi ID", column, "Trip Start Timestamp"],
+                     usecols=["Taxi ID", column, "week"],
                      dtype={
                          "Taxi ID": object,
                          column: dictionary[column],
-                         "Trip Start Timestamp": object
+                         "week": int
                      })
     t1 = time.time()
     print(f"{filename} done in {t1-t0} sec.")
+    if dictionary[column] == object:
+        df[column] = df[column].map(lambda x: x if type(x) == float else float(x[1:]))
     total_count = df.groupby(["Taxi ID", "week"])[column].sum().to_dict()
     headers = ['Taxi ID', *[f'week{i}' for i in range(1, 54)]]
     result = pd.DataFrame(
