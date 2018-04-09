@@ -17,13 +17,13 @@ def convert(data):
     return trip_miles
 
 
-def getSums(filename, column):
+def getSums(filename, column, dictionary):
     t0 = time.time()
-    df = pd.read_csv("Chicago_taxi_trips2013.csv",
+    df = pd.read_csv(filename,
                      usecols=["Taxi ID", column, "Trip Start Timestamp"],
                      dtype={
                          "Taxi ID": object,
-                         column: float,
+                         column: dictionary[column],
                          "Trip Start Timestamp": object
                      })
     t1 = time.time()
@@ -36,7 +36,8 @@ def getSums(filename, column):
     print(f"{filename}_{column}_sums.csv written.")
 
 if __name__ == "__main__":
-    for i in range(3, 7):
+    for i in range(4, 5):
         filename = f"Chicago_taxi_trips201{i}.csv"
+        dictionary = {"Trip Total": object, "Trip Seconds": float, "Tolls": object, "Fare": object, "Tips": object, "Tolls": object, "Extras": object}
         for column in ["Trip Total", "Trip Seconds", "Tolls", "Fare", "Tips", "Tolls", "Extras"]:
-            getSums(filename, column)
+            getSums(filename, column, dictionary)
