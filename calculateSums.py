@@ -11,7 +11,8 @@ DATATYPES = {
     "Trip Miles": float, "Trip Total": object, "Trip Seconds": float,
     "Tolls": object, "Fare": object, "Tips": object, "Tolls": object, "Extras": object,
     "Pickup Centroid Latitude": float, "Pickup Centroid Longitude": float,
-    "Dropoff Centroid Latitude": float, "Dropoff Centroid Longitude": float
+    "Dropoff Centroid Latitude": float, "Dropoff Centroid Longitude": float,
+    "Pickup Centroid Location": object
 }
 
 
@@ -45,25 +46,24 @@ def getSums(filename, column, df, year):
         t1 = time.time()
         print(f"map in {t1-t0} sec.")
     t0 = time.time()
-    total_count = df.groupby(["Taxi ID", "week"])[column].sum().to_dict()
+    total_count = df.groupby(["Taxi ID", "week"])[
+        column].sum().unstack(level=-1)
     t1 = time.time()
     print(f"groupby in {t1-t0} sec.")
-    t0 = time.time()
-    k = prepareForCSV(total_count)
-    t1 = time.time()
     print(f"prep in {t1-t0} sec.")
-    return k
+    return total_count
 
 
 if __name__ == "__main__":
-    year = 2016
-    filename = f"original/Chicago_taxi_trips{year}.csv"
+    year = 2013
+    filename = f"original/Chicago_taxi_trips{year}_weeks.csv"
     t0 = time.time()
     readcols = ["Trip Total"]
     # reading csv takes about 2 minutes
-    df = addWeeks(pd.read_csv(filename,
-                              usecols=readcols + ["Taxi ID", "Trip Start Timestamp"],
-                              dtype=DATATYPES))
+    df = pd.read_csv(filename,
+                     usecols=readcols +
+                     ["Taxi ID", "week"],
+                     dtype=DATATYPES)
     t1 = time.time()
     print(f"{filename} read (and weeks added) in {t1-t0} sec.")
 

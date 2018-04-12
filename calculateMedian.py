@@ -19,6 +19,7 @@ def calculateMedian(filename, median, res_file):
     
     return median
 
+
 if __name__ == "__main__":
     for file in os.listdir("Predictors"):
         if file != ".DS_Store" and file != "allYears_uniqueTaxi.csv.xlsx":
