@@ -18,7 +18,7 @@ def readWrite(year):
     t0 = time.time()
     df = pd.read_csv(filename,
                      usecols=["Taxi ID", "Trip Start Timestamp"],
-                     dtype=DATATYPES, nrows=1000000).dropna(axis=0, how="any")
+                     dtype=DATATYPES).dropna(axis=0, how="any")
     print(f"{filename} read in {round(time.time()-t0)} sec.")
 
     groups = df.groupby(["Taxi ID", lambda idx: getwknum(

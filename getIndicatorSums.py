@@ -1,5 +1,5 @@
 # pylint: skip-file
-
+# use http://www.racketracer.com/2016/07/06/pandas-in-parallel/
 import pandas as pd
 import time
 import datetime as dt
