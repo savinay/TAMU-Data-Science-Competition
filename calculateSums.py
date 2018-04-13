@@ -1,3 +1,6 @@
+# pylint: skip-file
+"""Get sums of things like trip totals and trip seconds."""
+
 import datetime as dt
 import time
 
