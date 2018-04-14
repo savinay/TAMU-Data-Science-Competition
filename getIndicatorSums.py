@@ -115,8 +115,9 @@ def readWrite(year):
     print(f"Group by in {round(time.time()-t0)} sec.")
 
     proportions = (groups.sum() / groups.count()).unstack(level=-1)
+    proportions.to_csv(f"{year}_iPickupDowntown.csv", index=False)
     medians = proportions.median()
-    medians.to_csv(f"{year}_iPickupDowntown.csv", index=False)
+    medians.to_csv(f"{year}_iPickupDowntown_median.csv", index=False)
     print(f"{year}_iPickupDowntown.csv written in {round(time.time()-t0)} sec.")
 
 
