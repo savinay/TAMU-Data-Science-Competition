@@ -57,7 +57,6 @@ def getInPolygonIndicators(wktdata, polygon):
     """
     t0 = time.time()
     points = wktdata.map(shapely.wkt.loads)
-    print(f"Map in {round(time.time()-t0)} sec.")
     return points.map(polygon.contains) * 1
 
 
@@ -102,7 +101,7 @@ def readWrite(year):
     df = pd.read_csv(filename,
                      usecols=["Taxi ID", "Trip Start Timestamp",
                               "Pickup Centroid Location"],
-                     dtype=DATATYPES).dropna(axis=0, how="any")
+                     dtype=DATATYPES, nrows=100).dropna(axis=0, how="any")
     print(f"{filename} read in {round(time.time()-t0)} sec.")
 
     df = parallelize_dataframe(df, getInDowntownIndicators)
