@@ -43,7 +43,7 @@ def readWrite(year):
     df = parallelize_dataframe(df, addWeeks)
     print(f"Weeks added in {round(time.time()-t0)} sec.")
 
-    result = df.groupby(["week", "Taxi ID"]).size()
+    result = df.groupby(["week", "Taxi ID"]).count().unstack(level=-1)
     print(f"Groupby in {round(time.time()-t0)} sec.")
 
     result.to_csv(f"{year}_numTaxisPerWeek.csv")
