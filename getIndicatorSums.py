@@ -31,7 +31,7 @@ def getDowntownBoundary():
 
 def parallelize_dataframe(df, func):
     num_partitions = 100
-    num_cores = 2
+    num_cores = 4
     df_split = np.array_split(df, num_partitions)
     pool = Pool(num_cores)
     df = pd.concat(pool.map(func, df_split))
@@ -73,13 +73,13 @@ def getwknum(string):
 
 
 def readWrite(year):
-    filename = f"original/Chicago_taxi_trips{year}.csv"
+    filename = f"Chicago_taxi_trips{year}.csv"
 
     t0 = time.time()
     df = pd.read_csv(filename,
                      usecols=["Taxi ID", "Trip Start Timestamp",
                               "Pickup Centroid Location"],
-                     dtype=DATATYPES, nrows=100).dropna(axis=0, how="any")
+                     dtype=DATATYPES).dropna(axis=0, how="any")
     print(f"{filename} read in {round(time.time()-t0)} sec.")
 
     df = parallelize_dataframe(df, getInDowntownIndicators)
@@ -99,5 +99,5 @@ def readWrite(year):
 
 
 if __name__ == "__main__":
-    readWrite(2014)
+    readWrite(2015)
     # test()
