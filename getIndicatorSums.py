@@ -87,7 +87,7 @@ def test():
 
 
 def readWrite(year):
-    filename = f"original/Chicago_taxi_trips{year}.csv"
+    filename = f"Chicago_taxi_trips{year}.csv"
 
     t0 = time.time()
     df = pd.read_csv(filename,
@@ -114,5 +114,5 @@ def readWrite(year):
 
 
 if __name__ == "__main__":
-    readWrite(2014)
+    readWrite(2016)
     # test()
