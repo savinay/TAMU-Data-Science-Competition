@@ -19,30 +19,26 @@ def getwknum(string):
     return dt.datetime(year, month, day, 0, 0, 0).timetuple().tm_yday // 7
 
 
-def addWeeks(df):
-    df['week'] = df['Trip Start Timestamp'].transform(lambda x: getwknum(x))
-    return df
+def readWrite(year):
+    filename = f"original/Chicago_taxi_trips{year}.csv"
+    chunksize = 100000
+    t0 = time.time()
+    for i, chunk in enumerate(pd.read_csv(filename,
+                                        usecols=DATATYPES.keys(),
+                                        dtype=DATATYPES,
+                                        chunksize=chunksize,
+                                        iterator=True)):
+        print("Chunk read.")
+        df["weeks"] = df["Trip Start Timestamp"].transform(getwknum)
+        print("Weeks added.")
+        if i == 0:
+            chunk.to_csv(filename.split(".")[0] + "_weeks.csv", index=False)
+        else:
+            chunk.to_csv(filename.split(".")[
+                        0] + "_weeks.csv", index=False, mode='a', header=None)
+        t1 = time.time()
+        print(f"{round(((chunksize * (i+1)) / 31100000)*100)}% written in {round(time.time()-t0)}.")
+    print(f"Total: {round(time.time()-t0)}")
 
-year = 2014
-filename = f"original/Chicago_taxi_trips{year}.csv"
-chunksize = 100000
-t0 = time.time()
-for i, chunk in enumerate(pd.read_csv(filename,
-                 usecols=DATATYPES.keys(),
-                 dtype=DATATYPES,
-                 chunksize=chunksize,
-                 iterator=True)):
-    print("Read.")
-    chunk = addWeeks(chunk)
-    print("Weeks added.")
-    if i == 0:
-        chunk.to_csv(filename.split(".")[0] + "_weeks.csv", index=False)
-    else:
-        chunk.to_csv(filename.split(".")[0] + "_weeks.csv", index=False, mode='a', header=None)
-    t1 = time.time()
-    print(f"{round(((chunksize * (i+1)) / 31100000)*100)}% written in {round(time.time()-t0)}.")
-
-t1 = time.time()
-print(f"Total: {round(time.time()-t0)}")
-
-# look into: infer_datetime_format, keep_date_col, date_parser, parse_dates, low_memory
+if __name__ == "__main__":
+    readWrite(2017)
