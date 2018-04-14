@@ -7,7 +7,7 @@ from multiprocessing import Pool
 import numpy as np
 
 DATATYPES = {
-    "Trip Start Timestamp": object, "Trip ID": object, "Taxi ID": object
+    "Trip Start Timestamp": object, "Taxi ID": object
 }
 
 
@@ -47,6 +47,7 @@ def readWrite(year):
     print(f"Groupby in {round(time.time()-t0)} sec.")
 
     result.to_csv(f"{year}_numTaxisPerWeek.csv")
+    result.to_csv(f"{year}_numTaxisPerWeek_medians.csv")
 
 
 if __name__ == "__main__":
