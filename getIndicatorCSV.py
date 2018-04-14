@@ -18,7 +18,7 @@ DATATYPES = {
 
 def parallelize_dataframe(df, func):
     num_partitions = 100
-    num_cores = 2
+    num_cores = 4
     df_split = np.array_split(df, num_partitions)
     pool = Pool(num_cores)
     df = pd.concat(pool.map(func, df_split))
@@ -36,6 +36,13 @@ def getwknum(string):
     month, day, year = map(int, [string[:2], string[3:5], string[6:10]])
     return dt.datetime(year, month, day, 0, 0, 0).timetuple().tm_yday // 7
 
+def getDowntownBoundary():
+    x1 = (-87.668046, 41.925163)
+    x2 = (-87.632791, 41.925714)
+    x3 = (-87.613650, 41.892051)
+    x4 = (-87.611171, 41.852618)
+    x5 = (-87.660700, 41.851470)
+    return Polygon([x1, x2, x3, x4, x5])
 
 def getSuburbBoundary():
     x1 = (-88.040402, 42.072566)
@@ -59,9 +66,14 @@ def getInSuburbIndicators(df):
         df["Dropoff Centroid  Location"], boundary)
     return df
 
+def getInDowntownIndicators(df):
+    boundary = getDowntownBoundary()
+    df["iDropoffDowntown"] = getInPolygonIndicators(
+        df["Dropoff Centroid  Location"], boundary)
+    return df
 
 def readWrite(year):
-    filename = f"original/Chicago_taxi_trips{year}.csv"
+    filename = f"Chicago_taxi_trips{year}.csv"
 
     t0 = time.time()
     df = pd.read_csv(filename, usecols=DATATYPES.keys(),
@@ -71,8 +83,10 @@ def readWrite(year):
     df = parallelize_dataframe(df, addWeeks)
     print(f"Weeks added in {round(time.time()-t0)} sec.")
 
-    df = parallelize_dataframe(df, getInSuburbIndicators).drop(
-        columns="Dropoff Centroid  Location")
+    df = parallelize_dataframe(df, getInSuburbIndicators)
+    print(f"Indicators in {round(time.time()-t0)} sec.")
+
+    df = parallelize_dataframe(df, getInDowntownIndicators)
     print(f"Indicators in {round(time.time()-t0)} sec.")
 
     df.to_csv(f"{year}_iRegions.csv", index=False)
@@ -80,5 +94,5 @@ def readWrite(year):
 
 
 if __name__ == "__main__":
-    readWrite(2017)
+    readWrite(2015)
     # test()
