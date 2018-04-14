@@ -7,7 +7,7 @@ from multiprocessing import Pool
 import numpy as np
 
 DATATYPES = {
-    "Trip Start Timestamp": object, "Trip ID": object, "Taxi ID": object
+    "Trip Start Timestamp": object, "Taxi ID": object
 }
 
 
@@ -33,7 +33,7 @@ def getwknum(string):
 
 
 def readWrite(year):
-    filename = f"original/Chicago_taxi_trips{year}.csv"
+    filename = f"Chicago_taxi_trips{year}.csv"
     t0 = time.time()
     df = pd.read_csv(filename,
                      usecols=DATATYPES.keys(),
