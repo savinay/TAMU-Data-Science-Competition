@@ -83,12 +83,12 @@ def readWrite(year):
     df["iPickupDowntown"] = getInPolygonIndicators(
         df["Pickup Centroid Location"], downtown)
     print(f"Indicators in {round(time.time()-t0)} sec.")
-    groups = df.groupby(["Taxi ID", lambda idx: getwknum(
-        df, idx, "Trip Start Timestamp")])["iPickupDowntown"]
+    df["week"] = df["Trip Start Timestamp"].map(getwknum)
+    print(f"Weeks added in {round(time.time()-t0)} sec.")
+    groups = df.groupby(["Taxi ID", "week"])["iPickupDowntown"]
     print(f"Group by in {round(time.time()-t0)} sec.")
     proportions = (groups.sum() / groups.count()).unstack(level=-1)
     medians = proportions.median()
-    print(type(medians))
     t0 = time.time()
     medians.to_csv(f"{year}_iPickupDowntown.csv", index=False)
     print(f"{year}_iPickupDowntown.csv written in {round(time.time()-t0)} sec.")

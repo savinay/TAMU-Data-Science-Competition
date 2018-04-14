@@ -1,31 +1,52 @@
+"""Calculate the number of taxis in a time period per week.
+ex: week 1 had 56 unique taxis driving."""
 import time
-import pandas as pd
 import datetime as dt
+import pandas as pd
+from multiprocessing import Pool
+import numpy as np
 
 DATATYPES = {
-    "Taxi ID": object, "Trip Start Timestamp": object, "Pickup Centroid Location": object
+    "Trip Start Timestamp": object, "Trip ID": object, "Taxi ID": object
 }
 
-def getwknum(df, idx, col):
-    string = df[col].loc[idx]
+
+def parallelize_dataframe(df, func):
+    num_partitions = 10
+    num_cores = 2
+    df_split = np.array_split(df, num_partitions)
+    pool = Pool(num_cores)
+    df = pd.concat(pool.map(func, df_split))
+    pool.close()
+    pool.join()
+    return df
+
+
+def addWeeks(df):
+    df["week"] = df["Trip Start Timestamp"].map(getwknum)
+    return df
+
+
+def getwknum(string):
     month, day, year = map(int, [string[:2], string[3:5], string[6:10]])
     return dt.datetime(year, month, day, 0, 0, 0).timetuple().tm_yday // 7
 
 
 def readWrite(year):
     filename = f"original/Chicago_taxi_trips{year}.csv"
-
     t0 = time.time()
     df = pd.read_csv(filename,
-                     usecols=["Taxi ID", "Trip Start Timestamp"],
-                     dtype=DATATYPES).dropna(axis=0, how="any")
-    print(f"{filename} read in {round(time.time()-t0)} sec.")
+                     usecols=DATATYPES.keys(),
+                     dtype=DATATYPES)
+    print(f"Read in {round(time.time()-t0)} sec.")
 
-    groups = df.groupby(["Taxi ID", lambda idx: getwknum(
-        df, idx, "Trip Start Timestamp")])
-    trips = groups.size().unstack(level=-1)
-    trips.to_csv(f"{year}_tripcounts.csv", index=False)
-    print(f"{year}_tripcounts.csv written in {round(time.time()-t0)} sec.")
+    df = parallelize_dataframe(df, addWeeks)
+    print(f"Weeks added in {round(time.time()-t0)} sec.")
+
+    result = df.groupby(["week", "Taxi ID"]).size()
+    print(f"Groupby in {round(time.time()-t0)} sec.")
+
+    result.to_csv(f"{year}_numTaxisPerWeek.csv")
 
 
 if __name__ == "__main__":
