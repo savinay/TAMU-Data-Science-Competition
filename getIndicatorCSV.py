@@ -1,5 +1,9 @@
 # pylint: skip-file
 # use http://www.racketracer.com/2016/07/06/pandas-in-parallel/
+"""
+Take a original data file and extract info if the dropoff was suburban
+and if the pickup was o hare. Also extract the week. Output to file.
+"""
 import datetime as dt
 import time
 from multiprocessing import Pool
