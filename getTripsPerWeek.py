@@ -37,16 +37,18 @@ def readWrite(year):
     t0 = time.time()
     df = pd.read_csv(filename,
                      usecols=DATATYPES.keys(),
-                     dtype=DATATYPES)
+                     dtype=DATATYPES,
+                     nrows=10000)
     print(f"Read in {round(time.time()-t0)} sec.")
 
     df = parallelize_dataframe(df, addWeeks)
     print(f"Weeks added in {round(time.time()-t0)} sec.")
 
-    result = df.groupby(["week", "Taxi ID"]).count().unstack(level=-1)
+    result = df.groupby(["week", "Taxi ID"]).count().unstack(level=-1).transpose()
     print(f"Groupby in {round(time.time()-t0)} sec.")
 
     result.to_csv(f"{year}_numTaxisPerWeek.csv")
+    result.to_csv(f"{year}_numTaxisPerWeek_medians.csv")
 
 
 if __name__ == "__main__":
