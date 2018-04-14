@@ -14,9 +14,11 @@ DATATYPES = {
     "Taxi ID": object, "Trip Start Timestamp": object, "Pickup Centroid Location": object
 }
 
+
 def addWeeks(df):
     df["week"] = df["Trip Start Timestamp"].map(getwknum)
     return df
+
 
 def getDowntownBoundary():
     x1 = (-87.668046, 41.925163)
@@ -28,7 +30,7 @@ def getDowntownBoundary():
 
 
 def parallelize_dataframe(df, func):
-    num_partitions = 10
+    num_partitions = 100
     num_cores = 2
     df_split = np.array_split(df, num_partitions)
     pool = Pool(num_cores)
@@ -55,8 +57,14 @@ def getInPolygonIndicators(wktdata, polygon):
     """
     t0 = time.time()
     points = wktdata.map(shapely.wkt.loads)
-    print(f"Map in {round(time.time()-t0)} sec.")
     return points.map(polygon.contains) * 1
+
+
+def getInDowntownIndicators(df):
+    downtown = getDowntownBoundary()
+    df["iPickupDowntown"] = getInPolygonIndicators(
+        df["Pickup Centroid Location"], downtown)
+    return df
 
 
 def getwknum(string):
@@ -93,12 +101,10 @@ def readWrite(year):
     df = pd.read_csv(filename,
                      usecols=["Taxi ID", "Trip Start Timestamp",
                               "Pickup Centroid Location"],
-                     dtype=DATATYPES).dropna(axis=0, how="any")
+                     dtype=DATATYPES, nrows=100).dropna(axis=0, how="any")
     print(f"{filename} read in {round(time.time()-t0)} sec.")
 
-    downtown = getDowntownBoundary()
-    df["iPickupDowntown"] = getInPolygonIndicators(
-        df["Pickup Centroid Location"], downtown)
+    df = parallelize_dataframe(df, getInDowntownIndicators)
     print(f"Indicators in {round(time.time()-t0)} sec.")
 
     df = parallelize_dataframe(df, addWeeks)
@@ -108,8 +114,9 @@ def readWrite(year):
     print(f"Group by in {round(time.time()-t0)} sec.")
 
     proportions = (groups.sum() / groups.count()).unstack(level=-1)
+    proportions.to_csv(f"{year}_iPickupDowntown.csv", index=False)
     medians = proportions.median()
-    medians.to_csv(f"{year}_iPickupDowntown.csv", index=False)
+    medians.to_csv(f"{year}_iPickupDowntown_median.csv", index=False)
     print(f"{year}_iPickupDowntown.csv written in {round(time.time()-t0)} sec.")
 
 
