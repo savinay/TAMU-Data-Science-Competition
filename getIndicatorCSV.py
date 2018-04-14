@@ -27,6 +27,16 @@ def parallelize_dataframe(df, func):
     return df
 
 
+def addWeeks(df):
+    df["week"] = df["Trip Start Timestamp"].map(getwknum)
+    return df
+
+
+def getwknum(string):
+    month, day, year = map(int, [string[:2], string[3:5], string[6:10]])
+    return dt.datetime(year, month, day, 0, 0, 0).timetuple().tm_yday // 7
+
+
 def getSuburbBoundary():
     x1 = (-88.040402, 42.072566)
     x2 = (-87.697086, 42.078652)
@@ -54,10 +64,15 @@ def readWrite(year):
     filename = f"original/Chicago_taxi_trips{year}.csv"
 
     t0 = time.time()
-    df = pd.read_csv(filename, usecols=DATATYPES.keys(), dtype=DATATYPES).dropna(axis=0, how="any")
+    df = pd.read_csv(filename, usecols=DATATYPES.keys(),
+                     dtype=DATATYPES).dropna(axis=0, how="any")
     print(f"{filename} read in {round(time.time()-t0)} sec.")
 
-    df = parallelize_dataframe(df, getInSuburbIndicators).drop(columns="Dropoff Centroid  Location")
+    df = parallelize_dataframe(df, addWeeks)
+    print(f"Weeks added in {round(time.time()-t0)} sec.")
+
+    df = parallelize_dataframe(df, getInSuburbIndicators).drop(
+        columns="Dropoff Centroid  Location")
     print(f"Indicators in {round(time.time()-t0)} sec.")
 
     df.to_csv(f"{year}_iRegions.csv", index=False)
