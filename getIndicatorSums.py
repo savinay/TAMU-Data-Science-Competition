@@ -72,28 +72,6 @@ def getwknum(string):
     return dt.datetime(year, month, day, 0, 0, 0).timetuple().tm_yday // 7
 
 
-def test():
-    df = pd.DataFrame({"Taxi ID": pd.Series(["A", "A", "B", "B", "C", "A"]),
-                       "Trip Start Timestamp": pd.Series(
-                           ["01/01/2013", "01/01/2013", "01/08/2013", "01/08/2013", "01/16/2013", "01/01/2013"]),
-                       "Pickup Centroid Location": pd.Series(
-                           ["POINT (-87.64 41.88)", "POINT (1 1)", "POINT (1 1)", "POINT (1 1)", "POINT (-87.64 41.88)", "POINT (1 1)"])})
-    downtown = getDowntownBoundary()
-    df["iPickupDowntown"] = getInPolygonIndicators(
-        df["Pickup Centroid Location"], downtown)
-    groups = df.groupby(["Taxi ID", lambda idx: getwknum(
-        df, idx, "Trip Start Timestamp")])["iPickupDowntown"]
-    print(df)
-    downtowns = groups.sum().unstack(level=-1)
-    print(downtowns)
-    totals = groups.count().unstack(level=-1)
-    print(totals)
-    proportions = downtowns / totals
-    print(proportions)
-    medians = proportions.median()
-    print(medians)
-
-
 def readWrite(year):
     filename = f"original/Chicago_taxi_trips{year}.csv"
 
