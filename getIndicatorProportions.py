@@ -96,5 +96,5 @@ def readWrite(year):
     print(f"csv written in {round(time.time()-t0)} sec.")
 
 if __name__ == "__main__":
-    readWrite(2017)
+    readWrite(2015)
     # test()
