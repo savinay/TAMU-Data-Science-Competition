@@ -28,7 +28,7 @@ def getInPolygonIndicators(wktdata, polygon):
     """
     t0 = time.time()
     points = wktdata.map(shapely.wkt.loads)
-    print(f"Map in {round(time.time()-t0)} sec.")
+    print(f"Map in {round((time.time()-t0)/60, 2)} min.")
     return points.map(polygon.contains) * 1
 
 
@@ -71,20 +71,20 @@ def readWrite(year):
                      usecols=["Taxi ID", "Trip Start Timestamp",
                               "Pickup Centroid Location"],
                      dtype=DATATYPES, nrows=1000).dropna(axis=0, how="any")
-    print(f"{filename} read in {round(time.time()-t0)} sec.")
+    print(f"{filename} read in {round((time.time()-t0)/60, 2)} min.")
 
     downtown = getDowntownBoundary()
     df["iPickupDowntown"] = getInPolygonIndicators(
         df["Pickup Centroid Location"], downtown)
-    print(f"Indicators in {round(time.time()-t0)} sec.")
+    print(f"Indicators in {round((time.time()-t0)/60, 2)} min.")
     groups = df.groupby(["Taxi ID", "week"])["iPickupDowntown"]
-    print(f"Group by in {round(time.time()-t0)} sec.")
+    print(f"Group by in {round((time.time()-t0)/60, 2)} min.")
     proportions = (groups.sum() / groups.count()).unstack(level=-1)
     medians = proportions.median()
     print(type(medians))
     t0 = time.time()
     medians.to_csv(f"{year}_iPickupDowntown.csv", index=False)
-    print(f"{year}_iPickupDowntown.csv written in {round(time.time()-t0)} sec.")
+    print(f"{year}_iPickupDowntown.csv written in {round((time.time()-t0)/60, 2)} min.")
 
 
 if __name__ == "__main__":

@@ -39,13 +39,13 @@ def readWrite(year):
                      usecols=DATATYPES.keys(),
                      dtype=DATATYPES,
                      nrows=10000)
-    print(f"Read in {round(time.time()-t0)} sec.")
+    print(f"Read in {round((time.time()-t0)/60, 2)} min.")
 
     df = parallelize_dataframe(df, addWeeks)
-    print(f"Weeks added in {round(time.time()-t0)} sec.")
+    print(f"Weeks added in {round((time.time()-t0)/60, 2)} min.")
 
     result = df.groupby(["week", "Taxi ID"]).count().unstack(level=-1).transpose()
-    print(f"Groupby in {round(time.time()-t0)} sec.")
+    print(f"Groupby in {round((time.time()-t0)/60, 2)} min.")
 
     result.to_csv(f"{year}_numTaxisPerWeek.csv")
     result.to_csv(f"{year}_numTaxisPerWeek_medians.csv")

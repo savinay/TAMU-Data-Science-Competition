@@ -74,30 +74,30 @@ def readWrite(year):
     df = pd.read_csv(filename,
                      usecols=DATATYPES.keys(),
                      dtype=DATATYPES).dropna(axis=0, how="any")
-    print(f"{filename} read in {round(time.time()-t0)} sec.")
+    print(f"{filename} read in {round((time.time()-t0)/60, 2)} min.")
 
     df = parallelize_dataframe(df, getNAtoSIndicators)
-    print(f"getNAtoSIndicators in {round(time.time()-t0)} sec.")
+    print(f"getNAtoSIndicators in {round((time.time()-t0)/60, 2)} min.")
 
     df = parallelize_dataframe(df, getAtoSIndicators)
-    print(f"getAtoSIndicators in {round(time.time()-t0)} sec.")
+    print(f"getAtoSIndicators in {round((time.time()-t0)/60, 2)} min.")
 
     groups = df.groupby(["Taxi ID", "week"])
-    print(f"Group by in {round(time.time()-t0)} sec.")
+    print(f"Group by in {round((time.time()-t0)/60, 2)} min.")
 
     proportions = (groups["NotAirToSub"].sum() /
                    groups["NotAirToSub"].count()).unstack(level=-1)
     proportions.to_csv(f"{year}_iNotAirToSub.csv", index=False)
     medians = proportions.median()
     medians.to_csv(f"{year}_iNotAirToSub_median.csv", index=False)
-    print(f"csv written in {round(time.time()-t0)} sec.")
+    print(f"csv written in {round((time.time()-t0)/60, 2)} min.")
 
     proportions = (groups["AirToSub"].sum() /
                    groups["AirToSub"].count()).unstack(level=-1)
     proportions.to_csv(f"{year}_iAirToSub.csv", index=False)
     medians = proportions.median()
     medians.to_csv(f"{year}_iAirToSub_median.csv", index=False)
-    print(f"csv written in {round(time.time()-t0)} sec.")
+    print(f"csv written in {round((time.time()-t0)/60, 2)} min.")
 
 
 if __name__ == "__main__":

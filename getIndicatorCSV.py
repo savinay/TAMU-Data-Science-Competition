@@ -82,19 +82,19 @@ def readWrite(year):
     t0 = time.time()
     df = pd.read_csv(filename, usecols=DATATYPES.keys(),
                      dtype=DATATYPES, nrows=100000).dropna(axis=0, how="any")
-    print(f"{filename} read in {round(time.time()-t0)} sec.")
+    print(f"{filename} read in {round((time.time()-t0)/60, 2)} min.")
 
     df = parallelize_dataframe(df, addWeeks)
-    print(f"Weeks added in {round(time.time()-t0)} sec.")
+    print(f"Weeks added in {round((time.time()-t0)/60, 2)} min.")
 
     df = parallelize_dataframe(df, getInSuburbIndicators)
-    print(f"Indicators in {round(time.time()-t0)} sec.")
+    print(f"Indicators in {round((time.time()-t0)/60, 2)} min.")
 
     df = parallelize_dataframe(df, addInDowntownIndicators)
-    print(f"Indicators in {round(time.time()-t0)} sec.")
+    print(f"Indicators in {round((time.time()-t0)/60, 2)} min.")
 
     df.to_csv(f"{year}_iRegions.csv", index=False)
-    print(f"csv written in {round(time.time()-t0)} sec.")
+    print(f"csv written in {round((time.time()-t0)/60, 2)} min.")
 
 
 if __name__ == "__main__":

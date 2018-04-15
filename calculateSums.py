@@ -66,10 +66,10 @@ def readWrite(year):
                      usecols=readcols +
                      ["Taxi ID", "Trip Start Timestamp"],
                      dtype=DATATYPES)
-    print(f"{filename} read in {round(time.time()-t0)} sec.")
+    print(f"{filename} read in {round((time.time()-t0)/60, 2)} min.")
 
     df = parallelize_dataframe(df, addDays)
-    print(f"Days added in {round(time.time()-t0)} sec.")
+    print(f"Days added in {round((time.time()-t0)/60, 2)} min.")
 
     medians = pd.DataFrame()
     for column in readcols:
