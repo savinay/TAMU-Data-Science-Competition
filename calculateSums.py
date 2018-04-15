@@ -83,7 +83,7 @@ def readWrite(year):
                      usecols=readcols +
                      ["Taxi ID", "Trip Start Timestamp"], nrows=100,
                      dtype=DATATYPES)
-    print(f"{filename} read in {round(time.time()-t0)} sec.")
+    print(f"{filename} read in {round((time.time()-t0)/60, 2)} min.")
 
     # df = parallelize_dataframe(df, addDays)
     df = parallelize_dataframe(df, addHours)

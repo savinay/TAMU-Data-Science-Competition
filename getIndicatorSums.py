@@ -80,22 +80,22 @@ def readWrite(year):
                      usecols=["Taxi ID", "Trip Start Timestamp",
                               "Pickup Centroid Location"],
                      dtype=DATATYPES).dropna(axis=0, how="any")
-    print(f"{filename} read in {round(time.time()-t0)} sec.")
+    print(f"{filename} read in {round((time.time()-t0)/60, 2)} min.")
 
     df = parallelize_dataframe(df, addInDowntownIndicators)
-    print(f"Indicators in {round(time.time()-t0)} sec.")
+    print(f"Indicators in {round((time.time()-t0)/60, 2)} min.")
 
     df = parallelize_dataframe(df, addWeeks)
-    print(f"Weeks added in {round(time.time()-t0)} sec.")
+    print(f"Weeks added in {round((time.time()-t0)/60, 2)} min.")
 
     groups = df.groupby(["Taxi ID", "week"])["iPickupDowntown"]
-    print(f"Group by in {round(time.time()-t0)} sec.")
+    print(f"Group by in {round((time.time()-t0)/60, 2)} min.")
 
     proportions = (groups.sum() / groups.count()).unstack(level=-1)
     proportions.to_csv(f"{year}_iPickupDowntown.csv", index=False)
     medians = proportions.median()
     medians.to_csv(f"{year}_iPickupDowntown_median.csv", index=False)
-    print(f"{year}_iPickupDowntown.csv written in {round(time.time()-t0)} sec.")
+    print(f"{year}_iPickupDowntown.csv written in {round((time.time()-t0)/60, 2)} min.")
 
 
 if __name__ == "__main__":
