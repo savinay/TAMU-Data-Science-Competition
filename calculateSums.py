@@ -57,7 +57,7 @@ def readWrite():
     # basepath = "/Users/josiahcoad/Desktop/Coding/dataScienceComp2017/TAMU-Data-Science-Competition"
     basepath = "."
     datapath = f"{basepath}/original"
-    outsumspath = f"{basepath}/daily/{year}/sums"
+    outsumspath = f"{basepath}/daily/sums/{year}"
     outmedianpath = f"{basepath}/daily/medians"
 
     filename = f"{datapath}/Chicago_taxi_trips{year}.csv"
@@ -79,7 +79,7 @@ def readWrite():
         result = getSums(column, df)
         column = column.replace(" ", "_")
         medians[column] = result.median()
-        result.to_csv(f"{column}_{year}_sums.csv", index=False)
+        result.to_csv(f"{outsumspath}/{column}_{year}_sums.csv", index=False)
         print(f"{outsumspath}/{column}_{year}_sums.csv in {round(time.time()-t0)}")
     medians.to_csv(f"{outmedianpath}/medians_{year}.csv", index_label="day", header=readcols)
     print(f"Done in {round(time.time()-t0)}")
