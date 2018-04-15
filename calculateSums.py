@@ -1,4 +1,4 @@
-# pylint: disable=C0013
+# pylint: disable=missing-docstring, invalid-name
 """Get sums of things like trip totals and trip seconds."""
 
 import datetime as dt
@@ -28,7 +28,7 @@ def parallelize_dataframe(df, func):
 
 
 def getdaynum(string):
-    month, day, year = map(int, [string[:2], string[2:4], string[6:]])
+    month, day, year = map(int, [string[:2], string[3:5], string[6:10]])
     return dt.datetime(year, month, day, 0, 0, 0).timetuple().tm_yday
 
 
@@ -45,15 +45,22 @@ def getSums(column, df):
         t1 = time.time()
         print(f"map in {t1-t0} sec.")
     t0 = time.time()
-    total_count = df.groupby(["Taxi ID", "week"])[
+    total_count = df.groupby(["Taxi ID", "day"])[
         column].sum().unstack(level=-1)
     t1 = time.time()
     print(f"groupby in {t1-t0} sec.")
     return total_count
 
 
-def readWrite(datapath, year):
-    filename = f"{datapath}Chicago_taxi_trips{year}.csv"
+def readWrite():
+    year = 2013
+    # basepath = "/Users/josiahcoad/Desktop/Coding/dataScienceComp2017/TAMU-Data-Science-Competition"
+    basepath = "."
+    datapath = f"{basepath}/original"
+    outsumspath = f"{basepath}/daily/{year}/sums"
+    outmedianpath = f"{basepath}/daily/medians"
+
+    filename = f"{datapath}/Chicago_taxi_trips{year}.csv"
     t0 = time.time()
     readcols = ["Trip Total", "Trip Miles",
                 "Trip Seconds", "Fare", "Tolls", "Extras", "Tips"]
@@ -62,10 +69,10 @@ def readWrite(datapath, year):
                      ["Taxi ID", "Trip Start Timestamp"],
                      dtype=DATATYPES,
                      nrows=10000)
-    print(f"{filename} read in {time.time()-t0} sec.")
+    print(f"{filename} read in {round(time.time()-t0)} sec.")
 
-    df = parallelize_dataframe(df, addWeeks)
-    print(f"Weeks added in {round(time.time()-t0)} sec.")
+    df = parallelize_dataframe(df, addDays)
+    print(f"Days added in {round(time.time()-t0)} sec.")
 
     medians = pd.DataFrame()
     for column in readcols:
@@ -73,10 +80,10 @@ def readWrite(datapath, year):
         column = column.replace(" ", "_")
         medians[column] = result.median()
         result.to_csv(f"{column}_{year}_sums.csv", index=False)
-        print(f"csv written.")
-    medians.to_csv(f"medians_{year}.csv", index_label="week", header=readcols)
+        print(f"{outsumspath}/{column}_{year}_sums.csv in {round(time.time()-t0)}")
+    medians.to_csv(f"{outmedianpath}/medians_{year}.csv", index_label="day", header=readcols)
+    print(f"Done in {round(time.time()-t0)}")
 
 
 if __name__ == "__main__":
-    datapath = "/Users/josiahcoad/Desktop/Coding/dataScienceComp2017/TAMU-Data-Science-Competition/original/"
-    readWrite(datapath, 2013)
+    readWrite()
