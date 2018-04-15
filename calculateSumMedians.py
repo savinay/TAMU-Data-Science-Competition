@@ -96,14 +96,11 @@ def readWrite(year):
         medians[column] = result.median()
         result.to_csv(f"{outsumspath}/{column}_{year}_sums.csv", index=False)
         print(f"{outsumspath}/{column}_{year}_sums.csv in total {round(time.time()-t0)}")
-    # print(year)
     medians.to_csv(f"{outmedianpath}/medians_{year}.csv", index_label="day", header=readcols)
     print(f"Medians {year} Done in total {round(time.time()-t0)}")
-    print(year)
     
 
 
 if __name__ == "__main__":
     for year in range(2013, 2018):
         readWrite(year)
-
