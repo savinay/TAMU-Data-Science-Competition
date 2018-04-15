@@ -77,11 +77,11 @@ def getInDowntownIndicators(df):
     return df
 
 def readWrite(year):
-    filename = f"Chicago_taxi_trips{year}.csv"
+    filename = f"original/Chicago_taxi_trips{year}.csv"
 
     t0 = time.time()
     df = pd.read_csv(filename, usecols=DATATYPES.keys(),
-                     dtype=DATATYPES).dropna(axis=0, how="any")
+                     dtype=DATATYPES, nrows=100000).dropna(axis=0, how="any")
     print(f"{filename} read in {round(time.time()-t0)} sec.")
 
     df = parallelize_dataframe(df, addWeeks)
@@ -98,5 +98,5 @@ def readWrite(year):
 
 
 if __name__ == "__main__":
-    readWrite(2015)
+    readWrite(2016)
     # test()

@@ -38,20 +38,26 @@ def getSums(column, df):
 
 
 def readWrite(year):
-    filename = f"original/Chicago_taxi_trips{year}_weeks.csv"
+    datapath = "/Users/josiahcoad/Desktop/Coding/dataScienceComp2017/TAMU-Data-Science-Competition/original/"
+    filename = f"{datapath}Chicago_taxi_trips{year}_weeks.csv"
     t0 = time.time()
-    readcols = ["Trip Total"]
+    readcols = ["Trip Total", "Trip Miles"]
     df = pd.read_csv(filename,
                      usecols=readcols +
                      ["Taxi ID", "week"],
-                     dtype=DATATYPES)
+                     dtype=DATATYPES,
+                     nrows=10000)
     print(f"{filename} read in {time.time()-t0} sec.")
 
+    medians = pd.DataFrame()
     for column in readcols:
         result = getSums(column, df)
-        result.to_csv(f"{year}_{column}_sums.csv", index=False)
-        print(f"{year}_{column}_sums.csv written.")
+        column = column.replace(" ", "_")
+        medians[column] = result.median()
+        result.to_csv(f"{column}_{year}_sums.csv", index=False)
+        print(f"csv written.")
+    medians.to_csv(f"medians_{year}.csv", index_label="week", header=readcols)
 
 
 if __name__ == "__main__":
-    readWrite(2017)
+    readWrite(2013)
