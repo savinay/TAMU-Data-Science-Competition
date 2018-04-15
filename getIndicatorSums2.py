@@ -1,5 +1,5 @@
 # pylint: disable=missing-docstring, invalid-name
-"""Newest version. Get indicator proportions for iAirToSub and iNotAirToSub"""
+"""Newest version. Get indicator proportions for iAirToSub and iNotAirToSub."""
 
 import datetime as dt
 import time
@@ -86,7 +86,6 @@ def readWrite(year):
 
     filename = f"{datapath}/Chicago_taxi_trips{year}.csv"
     t0 = time.time()
-    readcols = ["iNotAirToSub", "iAirToSub"]
     df = pd.read_csv(filename,
                      usecols=DATATYPES.keys(),
                      dtype=DATATYPES)
@@ -105,19 +104,20 @@ def readWrite(year):
     print(f"AtoS added in {round((time.time()-t0)/60, 2)} min.")
 
     medians = pd.DataFrame()
+    readcols = ["iNotAirToSub", "iAirToSub"]
+
     for column in readcols:
         groups = df.groupby(["Taxi ID", "week"])[column]
-        print(f"Group by in {round((time.time()-t0)/60, 2)} min.")
-        proportions = (groups.sum() / groups.count()).unstack(level=-1)
+        result = (groups.sum() / groups.count()).unstack(level=-1)
 
         column = column.replace(" ", "_")
         medians[column] = result.median()
         result.to_csv(f"{outsumspath}/{column}_{year}_sums.csv", index=False)
-        print(
-            f"{outsumspath}/{column}_{year}_sums.csv in total {round(time.time()-t0)}")
+        print(f"{outsumspath}/{column}_{year} in {round((time.time()-t0)/60, 2)} min.")
+
     medians.to_csv(f"{outmedianpath}/medians_{year}.csv",
                    index_label="day", header=readcols)
-    print(f"Done in total {round(time.time()-t0)}")
+    print(f"Done in total {round((time.time()-t0)/60, 2)} min.")
 
 
 if __name__ == "__main__":
