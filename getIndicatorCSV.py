@@ -70,7 +70,7 @@ def getInSuburbIndicators(df):
         df["Dropoff Centroid  Location"], boundary)
     return df
 
-def getInDowntownIndicators(df):
+def addInDowntownIndicators(df):
     boundary = getDowntownBoundary()
     df["iDropoffDowntown"] = getInPolygonIndicators(
         df["Dropoff Centroid  Location"], boundary)
@@ -90,7 +90,7 @@ def readWrite(year):
     df = parallelize_dataframe(df, getInSuburbIndicators)
     print(f"Indicators in {round(time.time()-t0)} sec.")
 
-    df = parallelize_dataframe(df, getInDowntownIndicators)
+    df = parallelize_dataframe(df, addInDowntownIndicators)
     print(f"Indicators in {round(time.time()-t0)} sec.")
 
     df.to_csv(f"{year}_iRegions.csv", index=False)

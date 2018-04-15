@@ -60,7 +60,7 @@ def getInPolygonIndicators(wktdata, polygon):
     return points.map(polygon.contains) * 1
 
 
-def getInDowntownIndicators(df):
+def addInDowntownIndicators(df):
     downtown = getDowntownBoundary()
     df["iPickupDowntown"] = getInPolygonIndicators(
         df["Pickup Centroid Location"], downtown)
@@ -82,7 +82,7 @@ def readWrite(year):
                      dtype=DATATYPES).dropna(axis=0, how="any")
     print(f"{filename} read in {round(time.time()-t0)} sec.")
 
-    df = parallelize_dataframe(df, getInDowntownIndicators)
+    df = parallelize_dataframe(df, addInDowntownIndicators)
     print(f"Indicators in {round(time.time()-t0)} sec.")
 
     df = parallelize_dataframe(df, addWeeks)

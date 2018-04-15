@@ -43,18 +43,16 @@ def getSums(column, df):
         df[column] = df[column].map(
             lambda x: x if type(x) == float else float(x[1:]))
         t1 = time.time()
-        print(f"map in {t1-t0} sec.")
+        print(f"map in {round(t1-t0)} sec.")
     t0 = time.time()
     total_count = df.groupby(["Taxi ID", "day"])[
         column].sum().unstack(level=-1)
     t1 = time.time()
-    print(f"groupby in {t1-t0} sec.")
+    print(f"groupby in {round(t1-t0)} sec.")
     return total_count
 
 
-def readWrite():
-    year = 2013
-    # basepath = "/Users/josiahcoad/Desktop/Coding/dataScienceComp2017/TAMU-Data-Science-Competition"
+def readWrite(year):
     basepath = "."
     datapath = f"{basepath}/original"
     outsumspath = f"{basepath}/daily/sums/{year}"
@@ -67,8 +65,7 @@ def readWrite():
     df = pd.read_csv(filename,
                      usecols=readcols +
                      ["Taxi ID", "Trip Start Timestamp"],
-                     dtype=DATATYPES,
-                     nrows=10000)
+                     dtype=DATATYPES)
     print(f"{filename} read in {round(time.time()-t0)} sec.")
 
     df = parallelize_dataframe(df, addDays)
@@ -80,10 +77,12 @@ def readWrite():
         column = column.replace(" ", "_")
         medians[column] = result.median()
         result.to_csv(f"{outsumspath}/{column}_{year}_sums.csv", index=False)
-        print(f"{outsumspath}/{column}_{year}_sums.csv in {round(time.time()-t0)}")
+        print(f"{outsumspath}/{column}_{year}_sums.csv in total {round(time.time()-t0)}")
     medians.to_csv(f"{outmedianpath}/medians_{year}.csv", index_label="day", header=readcols)
-    print(f"Done in {round(time.time()-t0)}")
+    print(f"Done in total {round(time.time()-t0)}")
 
 
 if __name__ == "__main__":
-    readWrite()
+    for year in range(2013, 2018):
+        readWrite(year)
+
