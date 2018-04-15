@@ -31,11 +31,24 @@ def getdaynum(string):
     month, day, year = map(int, [string[:2], string[3:5], string[6:10]])
     return dt.datetime(year, month, day, 0, 0, 0).timetuple().tm_yday
 
+def gethour(string):
+    month, day, year = map(int, [string[:2], string[3:5], string[6:10]])
+    amOrPm = string.split(" ")[2]
+    if amOrPm == "AM":
+        hour = int(string.split(" ")[1].split(':')[0])
+    else:
+        hour = int(string.split(" ")[1].split(':')[0]) + 12
+    day = dt.datetime(year, month, day, 0, 0, 0).timetuple().tm_yday
+    hour = hour + day*24
+    return hour
 
 def addDays(df):
     df["day"] = df["Trip Start Timestamp"].map(getdaynum)
     return df
 
+def addHours(df):
+    df["hour"] = df["Trip Start Timestamp"].map(gethour)
+    return df
 
 def getSums(column, df):
     if DATATYPES[column] == object:
@@ -45,7 +58,9 @@ def getSums(column, df):
         t1 = time.time()
         print(f"map in {round(t1-t0)} sec.")
     t0 = time.time()
-    total_count = df.groupby(["Taxi ID", "day"])[
+    # total_count = df.groupby(["Taxi ID", "day"])[
+    #     column].sum().unstack(level=-1)
+    total_count = df.groupby(["Taxi ID", "hour"])[
         column].sum().unstack(level=-1)
     t1 = time.time()
     print(f"groupby in {round(t1-t0)} sec.")
@@ -55,8 +70,10 @@ def getSums(column, df):
 def readWrite(year):
     basepath = "."
     datapath = f"{basepath}/original"
-    outsumspath = f"{basepath}/daily/sums/{year}"
-    outmedianpath = f"{basepath}/daily/medians"
+    # outsumspath = f"{basepath}/daily/sums/{year}"
+    # outmedianpath = f"{basepath}/daily/medians"
+    outsumspath = f"{basepath}/hourly/sums/{year}"
+    outmedianpath = f"{basepath}/hourly/medians"
 
     filename = f"{datapath}/Chicago_taxi_trips{year}.csv"
     t0 = time.time()
@@ -64,12 +81,13 @@ def readWrite(year):
                 "Trip Seconds", "Fare", "Tolls", "Extras", "Tips"]
     df = pd.read_csv(filename,
                      usecols=readcols +
-                     ["Taxi ID", "Trip Start Timestamp"],
+                     ["Taxi ID", "Trip Start Timestamp"], nrows=100,
                      dtype=DATATYPES)
     print(f"{filename} read in {round(time.time()-t0)} sec.")
 
-    df = parallelize_dataframe(df, addDays)
-    print(f"Days added in {round(time.time()-t0)} sec.")
+    # df = parallelize_dataframe(df, addDays)
+    df = parallelize_dataframe(df, addHours)
+    print(f"Hours added in {round(time.time()-t0)} sec.")
 
     medians = pd.DataFrame()
     for column in readcols:
@@ -78,8 +96,11 @@ def readWrite(year):
         medians[column] = result.median()
         result.to_csv(f"{outsumspath}/{column}_{year}_sums.csv", index=False)
         print(f"{outsumspath}/{column}_{year}_sums.csv in total {round(time.time()-t0)}")
+    # print(year)
     medians.to_csv(f"{outmedianpath}/medians_{year}.csv", index_label="day", header=readcols)
-    print(f"Done in total {round(time.time()-t0)}")
+    print(f"Medians {year} Done in total {round(time.time()-t0)}")
+    print(year)
+    
 
 
 if __name__ == "__main__":
