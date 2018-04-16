@@ -106,7 +106,7 @@ def readWrite(year):
         medians[column] = result.median()
         result.to_csv(f"{outsumspath}/{column}_{year}_sums.csv", index=False)
         print(
-            f"{outsumspath}/{column}_{year}_sums.csv in total {round(time.time()-t0)}")
+            f"{outsumspath}/{column}_{year}_sums.csv after total {round((time.time()-t0)/60)} min.")
     medians.to_csv(f"{outmedianpath}/medians_{year}.csv",
                    index_label="week", header=readcols)
     print(f"Medians {year} done after {round((time.time()-t0)/60)} min.")
