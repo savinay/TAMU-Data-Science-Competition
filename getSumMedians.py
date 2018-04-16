@@ -90,14 +90,14 @@ def readWrite(year):
     readcols = ["Trip Total", "Trip Miles",
                 "Trip Seconds", "Fare", "Tolls", "Extras", "Tips"]
     df = pd.read_csv(filename,
-                     usecols=DATATYPES.keys(), nrows=100,
+                     usecols=DATATYPES.keys(),
                      dtype=DATATYPES)
-    print(f"{filename} read in {round((time.time()-t0)/60, 2)} min.")
+    print(f"{filename} read after {round((time.time()-t0)/60)} min.")
 
     df = parallelize_dataframe(df, addWeeks)
     # df = parallelize_dataframe(df, addDays)
     # df = parallelize_dataframe(df, addHours)
-    print(f"Timechunk added in {round((time.time()-t0)/60, 2)} min.")
+    print(f"{timechunk} added after {round((time.time()-t0)/60)} min.")
 
     medians = pd.DataFrame()
     for column in readcols:
@@ -108,8 +108,8 @@ def readWrite(year):
         print(
             f"{outsumspath}/{column}_{year}_sums.csv in total {round(time.time()-t0)}")
     medians.to_csv(f"{outmedianpath}/medians_{year}.csv",
-                   index_label="day", header=readcols)
-    print(f"Medians {year} done in total {round(time.time()-t0)}")
+                   index_label="week", header=readcols)
+    print(f"Medians {year} done after {round((time.time()-t0)/60)} min.")
 
 
 if __name__ == "__main__":
@@ -117,4 +117,4 @@ if __name__ == "__main__":
     # for year in range(2013, 2018):
     # readWrite(year)
     readWrite(2017)
-    print(f"Total done in total {round(time.time()-t0)/60} min.")
+    print(f"All done after {round((time.time()-t0)/60)} min.")

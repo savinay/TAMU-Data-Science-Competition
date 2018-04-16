@@ -12,5 +12,6 @@ if __name__ == "__main__":
         sumsfolderpath = f"{timechunk}/sums/{year}"
         totals = pd.DataFrame()
         for infile in os.listdir(sumsfolderpath):
-            totals[infile.split(".")[0]] = pd.read_csv(infile).sum()
+            colname = infile.split(f"_{year}")[0]
+            totals[colname] = pd.read_csv(infile).sum()
         totals.to_csv(f"{timechunk}/totals/total_{year}.csv")
