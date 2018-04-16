@@ -1,5 +1,6 @@
 # pylint: disable=missing-docstring, invalid-name
-"""Get sums of things like trip totals and trip seconds."""
+"""Get weekly/daily/hourly sums per taxi and medians across all taxis
+of things like trip totals and trip seconds."""
 
 import datetime as dt
 import time
@@ -27,9 +28,15 @@ def parallelize_dataframe(df, func):
     return df
 
 
-def getdaynum(string):
+def getday(string):
     month, day, year = map(int, [string[:2], string[3:5], string[6:10]])
     return dt.datetime(year, month, day, 0, 0, 0).timetuple().tm_yday
+
+
+def getwk(string):
+    month, day, year = map(int, [string[:2], string[3:5], string[6:10]])
+    return dt.datetime(year, month, day, 0, 0, 0).timetuple().tm_yday // 7
+
 
 def gethour(string):
     month, day, year = map(int, [string[:2], string[3:5], string[6:10]])
@@ -42,52 +49,55 @@ def gethour(string):
     hour = hour + (day - 1) * 24
     return hour
 
+
 def addDays(df):
-    df["day"] = df["Trip Start Timestamp"].map(getdaynum)
+    df["day"] = df["Trip Start Timestamp"].map(getday)
     return df
+
 
 def addHours(df):
     df["hour"] = df["Trip Start Timestamp"].map(gethour)
     return df
 
+
+def addWeeks(df):
+    df["week"] = df["Trip Start Timestamp"].map(getwk)
+    return df
+
+
 def getSums(column, df):
     if DATATYPES[column] == object:
-        t0 = time.time()
         df[column] = df[column].map(
             lambda x: x if type(x) == float else float(x[1:]))
-        t1 = time.time()
-        print(f"map in {round(t1-t0)} sec.")
-    t0 = time.time()
     # total_count = df.groupby(["Taxi ID", "day"])[
     #     column].sum().unstack(level=-1)
-    total_count = df.groupby(["Taxi ID", "hour"])[
+    # total_count = df.groupby(["Taxi ID", "hour"])[
+    #     column].sum().unstack(level=-1)
+    total_count = df.groupby(["Taxi ID", "week"])[
         column].sum().unstack(level=-1)
-    t1 = time.time()
-    print(f"groupby in {round(t1-t0)} sec.")
     return total_count
 
 
 def readWrite(year):
     basepath = "."
+    timechunk = "weekly"
     datapath = f"{basepath}/original"
-    # outsumspath = f"{basepath}/daily/sums/{year}"
-    # outmedianpath = f"{basepath}/daily/medians"
-    outsumspath = f"{basepath}/hourly/sums/{year}"
-    outmedianpath = f"{basepath}/hourly/medians"
+    outsumspath = f"{basepath}/{timechunk}/sums/{year}"
+    outmedianpath = f"{basepath}/{timechunk}/medians"
 
     filename = f"{datapath}/Chicago_taxi_trips{year}.csv"
     t0 = time.time()
     readcols = ["Trip Total", "Trip Miles",
                 "Trip Seconds", "Fare", "Tolls", "Extras", "Tips"]
     df = pd.read_csv(filename,
-                     usecols=readcols +
-                     ["Taxi ID", "Trip Start Timestamp"], nrows=100,
+                     usecols=DATATYPES.keys(),
                      dtype=DATATYPES)
-    print(f"{filename} read in {round((time.time()-t0)/60, 2)} min.")
+    print(f"{filename} read after {round((time.time()-t0)/60)} min.")
 
+    df = parallelize_dataframe(df, addWeeks)
     # df = parallelize_dataframe(df, addDays)
-    df = parallelize_dataframe(df, addHours)
-    print(f"Hours added in {round(time.time()-t0)} sec.")
+    # df = parallelize_dataframe(df, addHours)
+    print(f"{timechunk} added after {round((time.time()-t0)/60)} min.")
 
     medians = pd.DataFrame()
     for column in readcols:
@@ -95,15 +105,16 @@ def readWrite(year):
         column = column.replace(" ", "_")
         medians[column] = result.median()
         result.to_csv(f"{outsumspath}/{column}_{year}_sums.csv", index=False)
-        print(f"{outsumspath}/{column}_{year}_sums.csv in total {round(time.time()-t0)}")
-    # print(year)
-    medians.to_csv(f"{outmedianpath}/medians_{year}.csv", index_label="day", header=readcols)
-    print(f"Medians {year} Done in total {round(time.time()-t0)}")
-    print(year)
-    
+        print(
+            f"{outsumspath}/{column}_{year}_sums.csv after total {round((time.time()-t0)/60)} min.")
+    medians.to_csv(f"{outmedianpath}/medians_{year}.csv",
+                   index_label="week", header=readcols)
+    print(f"Medians {year} done after {round((time.time()-t0)/60)} min.")
 
 
 if __name__ == "__main__":
-    for year in range(2013, 2018):
-        readWrite(year)
-
+    t0 = time.time()
+    # for year in range(2013, 2018):
+    # readWrite(year)
+    readWrite(2017)
+    print(f"All done after {round((time.time()-t0)/60)} min.")

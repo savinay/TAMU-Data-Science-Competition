@@ -68,8 +68,8 @@ def addDropoffSuburbIndicators(df):
 
 
 def addNAtoSIndicators(df):
-    df["iNotAirToSub"] = (1 - df["iDropoffSuburb"]) * \
-        df["Pickup O'Hare Community Area"]
+    df["iNotAirToSub"] = ((1 - df["iDropoffSuburb"]) *
+                          df["Pickup O'Hare Community Area"])
     return df
 
 
@@ -88,7 +88,8 @@ def readWrite(year):
     t0 = time.time()
     df = pd.read_csv(filename,
                      usecols=DATATYPES.keys(),
-                     dtype=DATATYPES)
+                     dtype=DATATYPES,
+                     nrows=10000)
     print(f"{filename} read in {round((time.time()-t0)/60, 2)} min.")
 
     df = parallelize_dataframe(df, addDays)
@@ -121,5 +122,6 @@ def readWrite(year):
 
 
 if __name__ == "__main__":
-    for i in range(2013, 2018):
-        readWrite(i)
+    # for i in range(2013, 2018):
+    #     readWrite(i)
+    readWrite(2017)
