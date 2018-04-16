@@ -73,14 +73,14 @@ def getSums(column, df):
     #     column].sum().unstack(level=-1)
     # total_count = df.groupby(["Taxi ID", "hour"])[
     #     column].sum().unstack(level=-1)
-    total_count = df.groupby(["Taxi ID", "week"])[
+    total_count = df.groupby(["Taxi ID", "hour"])[
         column].sum().unstack(level=-1)
     return total_count
 
 
 def readWrite(year):
     basepath = "."
-    timechunk = "weekly"
+    timechunk = "hourly"
     datapath = f"{basepath}/original"
     outsumspath = f"{basepath}/{timechunk}/sums/{year}"
     outmedianpath = f"{basepath}/{timechunk}/medians"
@@ -91,10 +91,10 @@ def readWrite(year):
                 "Trip Seconds", "Fare", "Tolls", "Extras", "Tips"]
     df = pd.read_csv(filename,
                      usecols=DATATYPES.keys(),
-                     dtype=DATATYPES)
+                     dtype=DATATYPES, nrows=100)
     print(f"{filename} read after {round((time.time()-t0)/60)} min.")
 
-    df = parallelize_dataframe(df, addWeeks)
+    df = parallelize_dataframe(df, addHours)
     # df = parallelize_dataframe(df, addDays)
     # df = parallelize_dataframe(df, addHours)
     print(f"{timechunk} added after {round((time.time()-t0)/60)} min.")
@@ -108,13 +108,13 @@ def readWrite(year):
         print(
             f"{outsumspath}/{column}_{year}_sums.csv after total {round((time.time()-t0)/60)} min.")
     medians.to_csv(f"{outmedianpath}/medians_{year}.csv",
-                   index_label="week", header=readcols)
+                   index_label="hour", header=readcols)
     print(f"Medians {year} done after {round((time.time()-t0)/60)} min.")
 
 
 if __name__ == "__main__":
     t0 = time.time()
-    # for year in range(2013, 2018):
-    # readWrite(year)
-    readWrite(2017)
+    for year in range(2013, 2018):
+        readWrite(year)
+    # readWrite(2017)
     print(f"All done after {round((time.time()-t0)/60)} min.")
