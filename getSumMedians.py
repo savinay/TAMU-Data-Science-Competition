@@ -1,5 +1,6 @@
 # pylint: disable=missing-docstring, invalid-name
-"""Get sums of things like trip totals and trip seconds."""
+"""Get weekly/daily/hourly sums per taxi and medians across all taxis
+of things like trip totals and trip seconds."""
 
 import datetime as dt
 import time
