@@ -10,6 +10,7 @@ if __name__ == "__main__":
     timechunk = "daily"
     for year in range(2013, 2018):
         sumsfolderpath = f"{timechunk}/sums/{year}"
+        totals = pd.DataFrame()
         for infile in os.listdir(sumsfolderpath):
-            pd.read_csv(infile).sum().to_csv(f"{timechunk}/totals/{infile}")
-
+            totals[infile.split(".")[0]] = pd.read_csv(infile).sum()
+        totals.to_csv(f"{timechunk}/totals/total_{year}.csv")
