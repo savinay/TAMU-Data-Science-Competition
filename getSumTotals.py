@@ -7,8 +7,8 @@ import pandas as pd
 
 if __name__ == "__main__":
     timechunk = "weekly"
-    # for year in range(2013, 2018):
-    for year in range(2017, 2018):
+    for year in range(2013, 2018):
+    # for year in range(2017, 2018):
         sumsfolderpath = f"{timechunk}/sums/{year}"
         totals = pd.DataFrame()
         for infile in os.listdir(sumsfolderpath):
