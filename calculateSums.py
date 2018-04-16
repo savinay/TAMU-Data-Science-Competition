@@ -39,7 +39,7 @@ def gethour(string):
     else:
         hour = int(string.split(" ")[1].split(':')[0]) + 12
     day = dt.datetime(year, month, day, 0, 0, 0).timetuple().tm_yday
-    hour = hour + day*24
+    hour = hour + (day - 1) * 24
     return hour
 
 def addDays(df):
