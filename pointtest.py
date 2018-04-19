@@ -1,11 +1,11 @@
-# pylint: skip-file
+# pylint: disable=missing-docstring, invalid-name
+"""Show functionality of the methods to determine 
+if points lie in the polygon for downtown."""
 
 import pandas as pd
-import time
-import datetime as dt
-from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon
 import shapely.wkt
+import datetime as dt
 
 DATATYPES = {
     "Taxi ID": object, "Trip Start Timestamp": object, "Pickup Centroid Location": object
@@ -63,30 +63,5 @@ def test():
     print(medians)
 
 
-def readWrite(year):
-    filename = f"original/Chicago_taxi_trips{year}.csv"
-
-    t0 = time.time()
-    df = pd.read_csv(filename,
-                     usecols=["Taxi ID", "Trip Start Timestamp",
-                              "Pickup Centroid Location"],
-                     dtype=DATATYPES, nrows=1000).dropna(axis=0, how="any")
-    print(f"{filename} read in {round((time.time()-t0)/60, 2)} min.")
-
-    downtown = getDowntownBoundary()
-    df["iPickupDowntown"] = getInPolygonIndicators(
-        df["Pickup Centroid Location"], downtown)
-    print(f"Indicators in {round((time.time()-t0)/60, 2)} min.")
-    groups = df.groupby(["Taxi ID", "week"])["iPickupDowntown"]
-    print(f"Group by in {round((time.time()-t0)/60, 2)} min.")
-    proportions = (groups.sum() / groups.count()).unstack(level=-1)
-    medians = proportions.median()
-    print(type(medians))
-    t0 = time.time()
-    medians.to_csv(f"{year}_iPickupDowntown.csv", index=False)
-    print(f"{year}_iPickupDowntown.csv written in {round((time.time()-t0)/60, 2)} min.")
-
-
 if __name__ == "__main__":
-    readWrite(2014)
-    # test()
+    test()
